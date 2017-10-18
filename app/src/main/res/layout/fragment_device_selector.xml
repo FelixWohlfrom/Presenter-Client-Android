@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".bluetooth.connectors.DeviceSelector">
+
+    <TextView
+        android:id="@+id/title_already_paired_devices"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:background="#333"
+        android:padding="5dp"
+        android:text="@string/title_already_paired_devices"
+        android:textColor="#fff"
+        android:visibility="gone" />
+
+    <ListView
+        android:id="@+id/paired_devices"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/title_already_paired_devices"
+        android:minHeight="10dp"
+        />
+
+    <TextView
+        android:id="@+id/title_new_devices"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/paired_devices"
+        android:background="#333"
+        android:padding="5dp"
+        android:text="@string/title_other_devices"
+        android:textColor="#fff"
+        android:visibility="gone"
+        />
+
+    <ListView
+        android:id="@+id/new_devices"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/title_new_devices"
+        android:minHeight="10dp"
+        >
+    </ListView>
+
+    <ProgressBar
+        android:id="@+id/device_scanning_active"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/new_devices"
+        android:indeterminate="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"
+        />
+
+    <Button
+        android:id="@+id/button_scan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:text="@string/button_scan"
+        />
+</RelativeLayout>

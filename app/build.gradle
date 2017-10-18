@@ -1,0 +1,31 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "26.0.2"
+    defaultConfig {
+        applicationId "de.wohlfrom.presenter"
+        minSdkVersion 22 // TODO Check what is needed to downgrade to api level 19 or lower
+        targetSdkVersion 22
+        versionCode 1
+        versionName "0.9"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        debug {
+            testCoverageEnabled = true
+        }
+
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2'
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.robolectric:robolectric:3.4.2'
+    // testCompile 'org.mockito:mockito-core:2.8.47'
+}

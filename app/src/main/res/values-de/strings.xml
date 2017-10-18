@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="bluetooth_connected">Verbunden mit: %s</string>
+    <string name="settings">Einstellungen</string>
+    <string name="connect_via_bluetooth">Per Bluetooth verbinden</string>
+    <string name="next_slide">Nächste Folie</string>
+    <string name="prev_slide">Vorhergehende Folie</string>
+    <string name="bluetooth_not_available">Bluetooth ist nicht verfügbar</string>
+    <string name="button_scan">Nach weiteren Geräten suchen</string>
+    <string name="disable_audio">Gerät während der Präsentation stummschalten</string>
+    <string name="navigate_using_volume_keys">Lautsprechertasten zur Navigation verwenden</string>
+    <string name="none_found">Keine Geräte gefunden</string>
+    <string name="none_paired">Keine Pairing-Geräte verfügbar</string>
+    <string name="title_already_paired_devices">Bisherige Pairing-Geräte</string>
+    <string name="title_device_selector">Bitte ein Gerät zur Steuerung auswählen</string>
+    <string name="title_other_devices">Andere verfügbare Geräte</string>
+    <string name="button_rescan">Erneut nach Geräten suchen</string>
+    <string name="bluetooth_not_connected">Bluetoothverbindung fehlgeschlagen. Stelle sicher, dass der Server auf dem PC gestartet wurde, bevor eine Verbindung aufgebaut wird.</string>
+    <string name="bluetooth_required_leaving">Bluetooth wird für die Fernsteuerung benötigt. Kehre zum Hauptmenü zurück…</string>
+    <string name="connect_via_wifi">Per WLan verbinden</string>
+    <string name="connection_lost">Verbindung zum Presenter Service verloren.</string>
+    <string name="about">Über %s</string>
+    <string name="copyright">Copyright © <xliff:g id="author_name">Felix Wohlfrom</xliff:g></string>
+    <string name="version">Version: %s</string>
+    <string name="howto">Um diese App zu verwenden, wird eine Server Software benötigt. Unter <a href="https://github.com/FelixWohlfrom/Presenter-Server">https://github.com/FelixWohlfrom/Presenter-Server</a> gibt es Informationen, wie der Server auf dem zu kontrollierenden System gestartet werden kann.</string>
+    <string name="license">Diese App ist lizenziert unter der <a href="https://www.gnu.org/licenses/gpl-3.0.txt">GNU GPLv3</a>.\nIcon von <a href="https://www.iconfinder.com/icons/473643/computer_desktop_device_hardware_monitor_pc_server_icon">Maxim Basinski</a>.</string>
+</resources>
