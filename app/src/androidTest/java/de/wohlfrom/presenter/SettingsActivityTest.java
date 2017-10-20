@@ -83,23 +83,29 @@ public class SettingsActivityTest {
     @LargeTest
     public void verifySilenceDuringPresentationStoring() throws InterruptedException {
         onView(withId(R.id.silenceDuringPresentation))
-                .perform(click())
+                .perform(click());
+
+        Thread.sleep(500);
+        onView(withId(R.id.silenceDuringPresentation))
                 .check(matches(isChecked()));
 
         settingsActivityRule.getActivity().onStop();
         settingsActivityRule.getActivity().finish();
-        Thread.sleep(500);
+        Thread.sleep(1000);
         assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
 
         settingsActivityRule.launchActivity(null);
         onView(withId(R.id.silenceDuringPresentation))
                 .check(matches(isChecked()))
-                .perform(click())
+                .perform(click());
+
+        Thread.sleep(500);
+        onView(withId(R.id.silenceDuringPresentation))
                 .check(matches(isNotChecked()));
 
         settingsActivityRule.getActivity().onStop();
         settingsActivityRule.getActivity().finish();
-        Thread.sleep(500);
+        Thread.sleep(1000);
         assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
 
         settingsActivityRule.launchActivity(null);
@@ -116,23 +122,28 @@ public class SettingsActivityTest {
     @LargeTest
     public void verifyUseVolumeKeysForNavigationStoring() throws InterruptedException {
         onView(withId(R.id.useVolumeKeysForNavigation))
-                .perform(click())
+                .perform(click());
+        Thread.sleep(500);
+        onView(withId(R.id.useVolumeKeysForNavigation))
                 .check(matches(isChecked()));
 
         settingsActivityRule.getActivity().onStop();
         settingsActivityRule.getActivity().finish();
-        Thread.sleep(500);
+        Thread.sleep(1000);
         assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
 
         settingsActivityRule.launchActivity(null);
         onView(withId(R.id.useVolumeKeysForNavigation))
                 .check(matches(isChecked()))
-                .perform(click())
+                .perform(click());
+
+        Thread.sleep(500);
+        onView(withId(R.id.useVolumeKeysForNavigation))
                 .check(matches(isNotChecked()));
 
         settingsActivityRule.getActivity().onStop();
         settingsActivityRule.getActivity().finish();
-        Thread.sleep(500);
+        Thread.sleep(1000);
         assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
 
         settingsActivityRule.launchActivity(null);
