@@ -1,6 +1,7 @@
 package de.wohlfrom.presenter;
 
 import android.support.test.filters.LargeTest;
+import android.support.test.filters.RequiresDevice;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
@@ -81,11 +82,11 @@ public class SettingsActivityTest {
      */
     @Test
     @LargeTest
+    @RequiresDevice
     public void verifySilenceDuringPresentationStoring() throws InterruptedException {
         onView(withId(R.id.silenceDuringPresentation))
                 .perform(click());
-
-        Thread.sleep(500);
+        Thread.sleep(1000);
         onView(withId(R.id.silenceDuringPresentation))
                 .check(matches(isChecked()));
 
@@ -98,8 +99,7 @@ public class SettingsActivityTest {
         onView(withId(R.id.silenceDuringPresentation))
                 .check(matches(isChecked()))
                 .perform(click());
-
-        Thread.sleep(500);
+        Thread.sleep(1000);
         onView(withId(R.id.silenceDuringPresentation))
                 .check(matches(isNotChecked()));
 
@@ -120,12 +120,13 @@ public class SettingsActivityTest {
      */
     @Test
     @LargeTest
+    @RequiresDevice
     public void verifyUseVolumeKeysForNavigationStoring() throws InterruptedException {
         onView(withId(R.id.useVolumeKeysForNavigation))
                 .perform(click());
-        Thread.sleep(500);
+        Thread.sleep(1000);
         onView(withId(R.id.useVolumeKeysForNavigation))
-                .check(matches(isChecked()));
+                .check(matches(isNotChecked()));
 
         settingsActivityRule.getActivity().onStop();
         settingsActivityRule.getActivity().finish();
@@ -134,12 +135,11 @@ public class SettingsActivityTest {
 
         settingsActivityRule.launchActivity(null);
         onView(withId(R.id.useVolumeKeysForNavigation))
-                .check(matches(isChecked()))
+                .check(matches(isNotChecked()))
                 .perform(click());
-
-        Thread.sleep(500);
+        Thread.sleep(1000);
         onView(withId(R.id.useVolumeKeysForNavigation))
-                .check(matches(isNotChecked()));
+                .check(matches(isChecked()));
 
         settingsActivityRule.getActivity().onStop();
         settingsActivityRule.getActivity().finish();
