@@ -24,7 +24,12 @@ android {
 }
 
 dependencies {
-    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2'
+    // AndroidJUnitRunner and JUnit Rules
+    androidTestCompile 'com.android.support.test:runner:1.0.1'
+    androidTestCompile 'com.android.support.test:rules:1.0.1'
+
+    // Espresso dependencies
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.0'
     testCompile 'junit:junit:4.12'
     testCompile 'org.robolectric:robolectric:3.4.2'
     // testCompile 'org.mockito:mockito-core:2.8.47'
