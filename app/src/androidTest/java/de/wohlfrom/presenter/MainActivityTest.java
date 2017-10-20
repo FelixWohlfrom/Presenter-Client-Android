@@ -2,6 +2,7 @@ package de.wohlfrom.presenter;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.matcher.BoundedMatcher;
+import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
@@ -48,6 +49,7 @@ public class MainActivityTest {
      * Verify that the settings activity can be started from main menu.
      */
     @Test
+    @MediumTest
     public void startSettingsActivity() {
         CharSequence settingsTitle =
                 InstrumentationRegistry.getTargetContext().getString(R.string.settings);
@@ -61,6 +63,7 @@ public class MainActivityTest {
      * Verify that the about activity can be started from main menu.
      */
     @Test
+    @MediumTest
     public void startAboutActivity() {
         CharSequence aboutTitle =
                 InstrumentationRegistry.getTargetContext().getString(R.string.about,
