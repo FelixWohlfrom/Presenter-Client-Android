@@ -63,7 +63,8 @@ public class MainActivityTest {
     @Test
     public void startAboutActivity() {
         CharSequence aboutTitle =
-                InstrumentationRegistry.getTargetContext().getString(R.string.about);
+                InstrumentationRegistry.getTargetContext().getString(R.string.about,
+                        InstrumentationRegistry.getTargetContext().getString(R.string.app_name));
 
         onView(withId(R.id.about)).perform(click());
         onView(isAssignableFrom(Toolbar.class))
