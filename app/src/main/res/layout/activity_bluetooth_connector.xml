@@ -5,5 +5,5 @@
     android:id="@+id/connector_content"
     android:orientation="vertical"
     android:layout_gravity="center_horizontal"
-    tools:context=".bluetooth.connectors.BluetoothConnector">
+    tools:context=".connectors.bluetooth.BluetoothConnector">
 </LinearLayout>

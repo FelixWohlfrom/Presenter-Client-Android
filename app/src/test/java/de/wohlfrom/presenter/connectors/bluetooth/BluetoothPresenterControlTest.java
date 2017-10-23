@@ -16,14 +16,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.*
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-package de.wohlfrom.presenter.bluetooth.connectors;
+package de.wohlfrom.presenter.connectors.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 import android.os.Message;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;

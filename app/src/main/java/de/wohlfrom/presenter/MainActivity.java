@@ -24,7 +24,7 @@ import android.app.Activity;
 import android.view.View;
 import android.widget.Button;
 
-import de.wohlfrom.presenter.bluetooth.connectors.BluetoothConnector;
+import de.wohlfrom.presenter.connectors.bluetooth.BluetoothConnector;
 
 /**
  * The main activity that shows the main menu.
