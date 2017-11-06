@@ -57,7 +57,7 @@ public class SettingsActivityTest {
      * The rule to interact with the settings activity
      */
     @Rule
-    public ActivityTestRule<SettingsActivity> settingsActivityRule
+    public final ActivityTestRule<SettingsActivity> settingsActivityRule
             = new ActivityTestRule<>(SettingsActivity.class);
 
     /**
@@ -165,6 +165,6 @@ public class SettingsActivityTest {
         assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
 
         settingsActivityRule.launchActivity(null);
-        onView(withId(R.id.useVolumeKeysForNavigation)).check(matches(isNotChecked()));
+        onView(withId(R.id.useVolumeKeysForNavigation)).check(matches(isChecked()));
     }
 }

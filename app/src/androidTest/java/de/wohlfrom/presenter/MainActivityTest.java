@@ -51,7 +51,7 @@ public class MainActivityTest {
      * The rule to interact with the main activity.
      */
     @Rule
-    public ActivityTestRule<MainActivity> mainActivityRule
+    public final ActivityTestRule<MainActivity> mainActivityRule
             = new ActivityTestRule<>(MainActivity.class);
 
     /**

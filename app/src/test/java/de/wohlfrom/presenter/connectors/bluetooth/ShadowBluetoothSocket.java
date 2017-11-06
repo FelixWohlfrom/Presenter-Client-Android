@@ -37,6 +37,8 @@ import java.io.OutputStream;
  * succeed (using {@link #failReading}.
  * It is also possible to read the last data written to inputStream using
  * {@link #getLastTransmittedString()}.
+ *
+ * The class needs to be public to make Robolectric happy.
  */
 @Implements(BluetoothSocket.class)
 public class ShadowBluetoothSocket {
@@ -53,7 +55,7 @@ public class ShadowBluetoothSocket {
      * Our input stream that will either return an empty value or throws an IOException,
      * depending on configuration.
      */
-    private static InputStream receivedStringWriter = new InputStream() {
+    private final static InputStream receivedStringWriter = new InputStream() {
         @Override
         public int read() throws IOException {
             try {
@@ -75,7 +77,7 @@ public class ShadowBluetoothSocket {
     };
 
     /** Stream to receive the data, can be returned by {@link #getLastTransmittedString()} */
-    private static ByteArrayOutputStream transmittedStringWriter = new ByteArrayOutputStream();
+    private final static ByteArrayOutputStream transmittedStringWriter = new ByteArrayOutputStream();
 
     @Implementation
     public void __constructor__(int type, int fd, boolean auth, boolean encrypt,

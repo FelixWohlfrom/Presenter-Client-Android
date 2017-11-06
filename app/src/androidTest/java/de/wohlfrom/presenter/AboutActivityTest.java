@@ -40,7 +40,7 @@ public class AboutActivityTest {
      * The rule to interact with the about activity.
      */
     @Rule
-    public ActivityTestRule<AboutActivity> aboutActivityRule
+    public final ActivityTestRule<AboutActivity> aboutActivityRule
             = new ActivityTestRule<>(AboutActivity.class);
 
     /**

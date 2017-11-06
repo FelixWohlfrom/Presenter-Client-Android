@@ -29,7 +29,7 @@ import static android.content.Context.MODE_PRIVATE;
 public class Settings {
 
     // Our preference object
-    private SharedPreferences mPreferences;
+    private final SharedPreferences mPreferences;
 
     // The settings keys
     private static final String SILENCE_DURING_PRESENTATION_SETTING = "silenceDuringPresentation";
