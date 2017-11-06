@@ -71,7 +71,7 @@ public class BluetoothConnector extends Activity
     /**
      * The settings instance
      */
-    Settings mSettings;
+    private Settings mSettings;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
