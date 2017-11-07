@@ -35,13 +35,6 @@ import static android.content.Context.AUDIO_SERVICE;
  * and one that shows the previous slides.
  */
 public class Presenter extends Fragment {
-
-    /**
-     * Some static constants to be used for command transmission.
-     */
-    public static final String NEXT_SLIDE = "nextSlide\n";
-    public static final String PREV_SLIDE = "prevSlide\n";
-
     /**
      * Audio management
      */
@@ -77,7 +70,14 @@ public class Presenter extends Fragment {
      * Listener interface for presenter events.
      */
     public interface PresenterListener {
+        /**
+         * Called if the server should switch to the previous slide.
+         */
         void onPrevSlide();
+
+        /**
+         * Called if the server should switch to the next slide.
+         */
         void onNextSlide();
     }
 
@@ -101,6 +101,12 @@ public class Presenter extends Fragment {
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString() + " must implement PresenterListener");
         }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
     }
 
     @Override

@@ -24,4 +24,7 @@
     <string name="version">Version: %s</string>
     <string name="howto">Um diese App zu verwenden, wird eine Server Software benötigt. Unter <a href="https://github.com/FelixWohlfrom/Presenter-Server">https://github.com/FelixWohlfrom/Presenter-Server</a> gibt es Informationen, wie der Server auf dem zu kontrollierenden System gestartet werden kann.</string>
     <string name="license">Diese App ist lizenziert unter der <a href="https://www.gnu.org/licenses/gpl-3.0.txt">GNU GPLv3</a>.\nIcon von <a href="https://www.iconfinder.com/icons/473643/computer_desktop_device_hardware_monitor_pc_server_icon">Maxim Basinski</a>.</string>
+    <string name="incompatible_server_version">"Inkompatible Version des Servers gefunden. Stelle sicher dass sowohl die App als auch der Server auf dem aktuellen Stand sind. "</string>
+    <string name="connecting_to_service">Verbinde mit Presenter Service. Bitte warten…</string>
+    <string name="parsing_error">Fehler beim Analysieren der Informationen des Servers.</string>
 </resources>

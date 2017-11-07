@@ -34,9 +34,12 @@ import android.os.Message;
 import android.view.KeyEvent;
 import android.widget.Toast;
 
+import de.wohlfrom.presenter.Connecting;
 import de.wohlfrom.presenter.Presenter;
 import de.wohlfrom.presenter.R;
 import de.wohlfrom.presenter.Settings;
+import de.wohlfrom.presenter.connectors.Command;
+import de.wohlfrom.presenter.connectors.RemoteControl;
 
 /**
  * The bluetooth connector activity is used to handle the complete presenter control using
@@ -141,47 +144,12 @@ public class BluetoothConnector extends Activity
         // onResume() will be called when ACTION_REQUEST_ENABLE activity returns.
         if (mPresenterControl != null) {
             // Only if the state is STATE_NONE, do we know that we haven't started already
-            if (mPresenterControl.getState() == BluetoothPresenterControl.ServiceState.NONE) {
+            if (mPresenterControl.getState() == RemoteControl.ServiceState.NONE) {
                 // initialize presenter control service
                 mPresenterControl.start();
             }
 
-            if (mPresenterControl.getState() != BluetoothPresenterControl.ServiceState.CONNECTED) {
-                // show device selector
-                setTitle(R.string.title_device_selector);
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
-                Fragment fragment = new DeviceSelector();
-                transaction.replace(R.id.connector_content, fragment);
-                transaction.commit();
-
-            } else {
-                // show presenter fragment
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
-                Fragment fragment = new Presenter();
-                transaction.replace(R.id.connector_content, fragment);
-                transaction.commit();
-
-                mPresenterVisible = true;
-            }
-        }
-    }
-
-    /**
-     * The handler reacts on bluetooth status changes (connect, disconnect).
-     */
-    @SuppressLint("HandlerLeak") // We don't leak any handlers here
-    private final Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-        if (msg.what == BluetoothPresenterControl.ServiceState.CONNECTED.ordinal()) {
-            if (msg.getData().getBoolean(BluetoothPresenterControl.RESULT_VALUES[0])) {
-                // If connection succeeded
-                Toast.makeText(BluetoothConnector.this,
-                        BluetoothConnector.this.getString(R.string.bluetooth_connected,
-                                msg.getData().getString(
-                                        BluetoothPresenterControl.RESULT_VALUES[1])),
-                        Toast.LENGTH_SHORT).show();
-
+            if (mPresenterControl.getState() == RemoteControl.ServiceState.CONNECTED) {
                 // show presenter fragment
                 FragmentTransaction transaction = getFragmentManager().beginTransaction();
                 Fragment fragment = new Presenter();
@@ -190,24 +158,103 @@ public class BluetoothConnector extends Activity
                 transaction.commit();
 
                 mPresenterVisible = true;
+            } else if (mPresenterControl.getState() == RemoteControl.ServiceState.CONNECTING) {
+                // show "connecting" fragment
+                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                Fragment fragment = new Connecting();
+                transaction.replace(R.id.connector_content, fragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
 
             } else {
-                Toast.makeText(BluetoothConnector.this,
-                        getString(R.string.bluetooth_not_connected),
-                        Toast.LENGTH_SHORT).show();
+                // show device selector
+                setTitle(R.string.title_device_selector);
+                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                Fragment fragment = new DeviceSelector();
+                transaction.replace(R.id.connector_content, fragment);
+                transaction.commit();
             }
+        }
+    }
 
-        } else if (msg.what == BluetoothPresenterControl.ServiceState.NONE.ordinal()) {
-            Toast.makeText(BluetoothConnector.this,
-                    BluetoothConnector.this.getString(R.string.connection_lost),
-                    Toast.LENGTH_LONG).show();
+    /**
+     * The handler reacts on status changes of our service.
+     */
+    @SuppressLint("HandlerLeak") // We don't leak any handlers here
+    private final Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == RemoteControl.ServiceState.CONNECTED.ordinal()) {
+                if (msg.getData().getBoolean(RemoteControl.RESULT_VALUES[0])) {
+                    // If connection succeeded
+                    Toast.makeText(BluetoothConnector.this,
+                            BluetoothConnector.this.getString(R.string.bluetooth_connected,
+                                    msg.getData().getString(
+                                            BluetoothPresenterControl.RESULT_VALUES[1])),
+                            Toast.LENGTH_SHORT).show();
+
+                    // Remove "connecting" fragment
+                    if (getFragmentManager().getBackStackEntryCount() > 0) {
+                        getFragmentManager().popBackStack();
+                    }
+
+                    // show presenter fragment
+                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                    Fragment fragment = new Presenter();
+                    transaction.replace(R.id.connector_content, fragment);
+                    transaction.addToBackStack(null);
+                    transaction.commit();
+
+                    mPresenterVisible = true;
+                    return;
+
+                } else {
+                    Toast.makeText(BluetoothConnector.this,
+                            getString(R.string.bluetooth_not_connected),
+                            Toast.LENGTH_SHORT).show();
+                }
+
+            } else if (msg.what == RemoteControl.ServiceState.CONNECTING.ordinal()) {
+                // show "connecting" fragment
+                setTitle(R.string.connecting_to_service);
+                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                Fragment fragment = new Connecting();
+                transaction.replace(R.id.connector_content, fragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+
+                return;
+
+            } else if (msg.what == RemoteControl.ServiceState.ERROR.ordinal()) {
+                RemoteControl.ERROR_TYPES error_type = RemoteControl.ERROR_TYPES.valueOf(
+                        msg.getData().getString(RemoteControl.RESULT_VALUES[2]));
+
+                String errorMessage = "";
+
+                switch (error_type) {
+                    case VERSION:
+                        errorMessage = getString(R.string.incompatible_server_version);
+                        break;
+                    case PARSING:
+                        errorMessage = getString(R.string.parsing_error);
+                        break;
+                }
+
+                Toast.makeText(BluetoothConnector.this, errorMessage, Toast.LENGTH_LONG).show();
+
+            } else if (msg.what == RemoteControl.ServiceState.NONE.ordinal()) {
+                Toast.makeText(BluetoothConnector.this,
+                        BluetoothConnector.this.getString(R.string.connection_lost),
+                        Toast.LENGTH_LONG).show();
+            }
 
             if (getFragmentManager().getBackStackEntryCount() > 0) {
                 getFragmentManager().popBackStack();
 
                 mPresenterVisible = false;
             }
-        }
+
+            setTitle(R.string.title_device_selector);
         }
     };
 
@@ -274,16 +321,18 @@ public class BluetoothConnector extends Activity
     @Override
     public void onBackPressed() {
         mPresenterVisible = false;
+        mPresenterControl.disconnect();
+        setTitle(R.string.title_device_selector);
         super.onBackPressed();
     }
 
     @Override
     public void onPrevSlide() {
-        mPresenterControl.write(Presenter.PREV_SLIDE.getBytes());
+        mPresenterControl.sendCommand(Command.PREV_SLIDE);
     }
 
     @Override
     public void onNextSlide() {
-        mPresenterControl.write(Presenter.NEXT_SLIDE.getBytes());
+        mPresenterControl.sendCommand(Command.NEXT_SLIDE);
     }
 }
