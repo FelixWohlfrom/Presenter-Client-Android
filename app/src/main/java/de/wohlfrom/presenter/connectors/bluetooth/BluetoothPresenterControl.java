@@ -32,12 +32,13 @@ import java.io.OutputStream;
 import java.util.UUID;
 
 import de.wohlfrom.presenter.BuildConfig;
+import de.wohlfrom.presenter.connectors.RemoteControl;
 
 /**
  * This class handles the bluetooth connection. It initiates the connection to a device and can be
  * used to transmit data to the other device.
  */
-class BluetoothPresenterControl {
+class BluetoothPresenterControl extends RemoteControl {
     // Debugging
     private static final String TAG = "BluetoothControl";
 
@@ -49,30 +50,6 @@ class BluetoothPresenterControl {
     private final BluetoothAdapter mAdapter;
     private ConnectThread mConnectThread;
     private ConnectedThread mConnectedThread;
-    private ServiceState mState;
-    private final Handler mHandler;
-
-    // Constants that indicate the current connection state
-    enum ServiceState {
-        /**
-         * we're doing nothing
-         */
-        NONE,
-        /**
-         * now initiating an outgoing connection
-         */
-        CONNECTING,
-        /**
-         * now connected to a remote device
-         */
-        CONNECTED
-    }
-
-    /**
-     * The possible result values of the connection result.
-     * Result will always contain a success state. If success is true, also a name is given.
-     */
-    final static String[] RESULT_VALUES = { "success", "name" };
 
     /**
      * Constructor. Prepares a new bluetooth presenter control session.
@@ -80,20 +57,12 @@ class BluetoothPresenterControl {
      * @param handler A handler to receive connection results
      */
     BluetoothPresenterControl(Handler handler) {
+        super(handler);
         mAdapter = BluetoothAdapter.getDefaultAdapter();
-        mState = ServiceState.NONE;
-        mHandler = handler;
     }
 
     /**
-     * Return the current connection state.
-     */
-    synchronized ServiceState getState() {
-        return mState;
-    }
-
-    /**
-     * Start the chat service. Called by the Activity onResume()
+     * Start the presenter service. Called by the Activity onResume()
      */
     synchronized void start() {
         // Cancel any thread attempting to make a connection
@@ -158,16 +127,8 @@ class BluetoothPresenterControl {
         }
 
         // Start the thread to manage the connection and perform transmissions
-        mConnectedThread = new ConnectedThread(socket);
+        mConnectedThread = new ConnectedThread(socket, this, device);
         mConnectedThread.start();
-
-        // Send the name of the connected device back to the result listener
-        Message msg = mHandler.obtainMessage(ServiceState.CONNECTED.ordinal());
-        Bundle bundle = new Bundle();
-        bundle.putBoolean(RESULT_VALUES[0], true);
-        bundle.putString(RESULT_VALUES[1], device.getName());
-        msg.setData(bundle);
-        mHandler.sendMessage(msg);
     }
 
     /**
@@ -187,12 +148,17 @@ class BluetoothPresenterControl {
         }
     }
 
+    @Override
+    public void sendMessage(PresenterMessage message) {
+        write((message.toString() + "\n\n").getBytes());
+    }
+
     /**
      * Write output to the connected device. If no device is connected, no data is written.
      *
      * @param out The bytes to write
      */
-    void write(byte[] out) {
+    private void write(byte[] out) {
         // Create temporary object
         ConnectedThread connectedThread;
         // Synchronize a copy of the ConnectedThread
@@ -224,15 +190,20 @@ class BluetoothPresenterControl {
      * Indicate that the connection was lost and notify callback handler.
      */
     private void connectionLost() {
-        if (mState == ServiceState.CONNECTED) {
-            // Send a failure message back to the handler
-            Message msg = mHandler.obtainMessage(ServiceState.NONE.ordinal());
-            Bundle bundle = new Bundle();
-            msg.setData(bundle);
-            mHandler.sendMessage(msg);
-        }
+        // Send a failure message back to the handler
+        Message msg = mHandler.obtainMessage(ServiceState.NONE.ordinal());
+        Bundle bundle = new Bundle();
+        msg.setData(bundle);
+        mHandler.sendMessage(msg);
 
         mState = ServiceState.NONE;
+    }
+
+    @Override
+    protected void disconnect() {
+        // This will signal the reader thread to stop reading
+        mState = ServiceState.NONE;
+        mConnectedThread.cancel();
     }
 
     /**
@@ -253,8 +224,7 @@ class BluetoothPresenterControl {
             mmDevice = device;
             BluetoothSocket tmp = null;
 
-            // Get a BluetoothSocket for a connection with the
-            // given BluetoothDevice
+            // Get a BluetoothSocket for a connection with the given BluetoothDevice
             try {
                 tmp = device.createRfcommSocketToServiceRecord(SERVICE_UUID);
             } catch (IOException e) {
@@ -262,6 +232,11 @@ class BluetoothPresenterControl {
             }
             mmSocket = tmp;
             mState = ServiceState.CONNECTING;
+
+            // Notifiy the user that we are now connecting
+            android.os.Message userNotification
+                    = mHandler.obtainMessage(ServiceState.CONNECTING.ordinal());
+            mHandler.sendMessage(userNotification);
         }
 
         /**
@@ -275,8 +250,8 @@ class BluetoothPresenterControl {
 
             // Make a connection to the BluetoothSocket
             try {
-                // This is a blocking call and will only return on a
-                // successful connection or an exception
+                // This is a blocking call and will only return on a successful connection
+                // or an exception
                 mmSocket.connect();
             } catch (IOException e) {
                 // Close the socket
@@ -315,17 +290,25 @@ class BluetoothPresenterControl {
      * It handles all incoming and outgoing transmissions.
      */
     private class ConnectedThread extends Thread {
-        private final BluetoothSocket mmSocket;
-        private final InputStream mmInStream;
-        private final OutputStream mmOutStream;
+        private final BluetoothSocket mSocket;
+        private final InputStream mInStream;
+        private final OutputStream mOutStream;
+        private final RemoteControl mRemoteControl;
+        private final BluetoothDevice mDevice;
+        private final StringBuffer mMessageBuffer;
 
         /**
          * Initiate the transmission using a given socket.
          *
          * @param socket The socket to connect to
+         * @param control The parent remote control object
+         * @param device The BluetoothDevice that has been connected
          */
-        ConnectedThread(BluetoothSocket socket) {
-            mmSocket = socket;
+        ConnectedThread(BluetoothSocket socket, RemoteControl control, BluetoothDevice device) {
+            mSocket = socket;
+            mRemoteControl = control;
+            mDevice = device;
+            mMessageBuffer = new StringBuffer();
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
 
@@ -337,28 +320,38 @@ class BluetoothPresenterControl {
                 Log.e(TAG, "temp sockets not created", e);
             }
 
-            mmInStream = tmpIn;
-            mmOutStream = tmpOut;
-            mState = ServiceState.CONNECTED;
+            mInStream = tmpIn;
+            mOutStream = tmpOut;
+            // State will be set to connected once the version information is exchanged and we
+            // found a common protocol version set to use.
         }
 
         /**
-         * Run transmission to output stream. Try reading from input stream to wait until
-         * connection is lost
+         * Try reading from input stream to wait until connection is lost.
          */
         public void run() {
             byte[] buffer = new byte[100];
 
             // Keep listening to the InputStream while connected
-            while (mState == ServiceState.CONNECTED) {
+            while (mState != ServiceState.NONE) {
                 try {
-                    // Read from the InputStream. This is just a dummy read to recognize connection
-                    // losses
-                    mmInStream.read(buffer);
+                    int readBytes = mInStream.read(buffer);
+                    for (int i = 0; i < readBytes; i++) {
+                        mMessageBuffer.append((char)buffer[i]);
+                    }
+
+                    if (mMessageBuffer.toString().contains("\n\n")) {
+                        mRemoteControl.handleMessage(mDevice.getName(),
+                                mMessageBuffer.substring(0, mMessageBuffer.indexOf("\n\n")));
+
+                        mMessageBuffer.delete(0, mMessageBuffer.indexOf("\n\n") + "\n\n".length());
+                    }
                 } catch (IOException e) {
-                    Log.e(TAG, "disconnected", e);
-                    connectionLost();
-                    break;
+                    // Ignore exception if we already recognized that we are disconnected
+                    if (mState != ServiceState.NONE) {
+                        Log.e(TAG, "disconnected", e);
+                        connectionLost();
+                    }
                 }
             }
         }
@@ -370,7 +363,7 @@ class BluetoothPresenterControl {
          */
         void write(byte[] buffer) {
             try {
-                mmOutStream.write(buffer);
+                mOutStream.write(buffer);
             } catch (IOException e) {
                 Log.e(TAG, "Exception during write", e);
             }
@@ -381,7 +374,7 @@ class BluetoothPresenterControl {
          */
         void cancel() {
             try {
-                mmSocket.close();
+                mSocket.close();
             } catch (IOException e) {
                 Log.e(TAG, "closing of connect socket failed", e);
             }

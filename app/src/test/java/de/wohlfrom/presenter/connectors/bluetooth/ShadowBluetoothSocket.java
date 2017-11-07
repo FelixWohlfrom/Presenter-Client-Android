@@ -50,6 +50,7 @@ public class ShadowBluetoothSocket {
      */
     private static Boolean connectionSucceed = null;
     private static Boolean failReading = null;
+    private static byte[] stringToTransmit = null;
 
     /**
      * Our input stream that will either return an empty value or throws an IOException,
@@ -66,18 +67,41 @@ public class ShadowBluetoothSocket {
             if (failReading) {
                 throw new IOException("Reading error");
             } else {
-                return -1;
+                if (stringToTransmit == null) {
+                    return -1;
+                } else {
+                    return stringToTransmit.length;
+                }
             }
         }
 
         @Override
         public int read(byte[] b) throws IOException {
-            return read();
+            if (failReading) {
+                throw new IOException("Reading error");
+            } else {
+                if (stringToTransmit != null) {
+                    int transmissionLength = Math.min(stringToTransmit.length, b.length);
+                    System.arraycopy(stringToTransmit, 0, b, 0, transmissionLength);
+
+                    if (stringToTransmit.length > b.length) {
+                        System.arraycopy(stringToTransmit, 0, stringToTransmit, b.length,
+                                stringToTransmit.length - b.length);
+                    } else {
+                        stringToTransmit = null;
+                    }
+
+                    return transmissionLength;
+                } else {
+                    return -1;
+                }
+            }
         }
     };
 
     /** Stream to receive the data, can be returned by {@link #getLastTransmittedString()} */
-    private final static ByteArrayOutputStream transmittedStringWriter = new ByteArrayOutputStream();
+    private final static ByteArrayOutputStream transmittedStringWriter
+            = new ByteArrayOutputStream();
 
     @Implementation
     public void __constructor__(int type, int fd, boolean auth, boolean encrypt,
@@ -123,6 +147,20 @@ public class ShadowBluetoothSocket {
      */
     static void setFailReading(boolean failReading) {
         ShadowBluetoothSocket.failReading = failReading;
+    }
+
+    /**
+     * Sets the string to transmit on next transmission to given string. Will transmit the given
+     * string once. If empty string or null is given, nothing is transmitted.
+     *
+     * @param stringToTransmit The string to transmit on next transmission
+     */
+    static void setTransmittedString(String stringToTransmit) {
+        if (stringToTransmit != null && stringToTransmit.length() > 0) {
+            ShadowBluetoothSocket.stringToTransmit = stringToTransmit.getBytes();
+        } else {
+            ShadowBluetoothSocket.stringToTransmit = null;
+        }
     }
 
     /**

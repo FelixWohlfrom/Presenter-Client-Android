@@ -11,10 +11,18 @@
     <string name="disable_audio">Silence device during presentation</string>
     <string name="navigate_using_volume_keys">Use volume keys for navigation</string>
 
+    <!-- General presenter -->
+    <string name="title_device_selector">Please select device to control</string>
+    <string name="connecting_to_service">Connecting to presenter service. Please wait…</string>
+    <string name="parsing_error">Error while parsing data from server.</string>
+    <string name="connection_lost">Lost connection to presenter service.</string>
+    <string name="incompatible_server_version">Incompatible server version detected. Please make sure both app and server are up to date.</string>
+    <string name="next_slide">Next Slide</string>
+    <string name="prev_slide">Previous Slide</string>
+
     <!-- Bluetooth presenting -->
     <string name="bluetooth_not_available">Bluetooth is not available</string>
     <string name="bluetooth_required_leaving">Bluetooth is required to allow remote control. Returning to main menu…</string>
-    <string name="title_device_selector">Please select device to control</string>
     <string name="none_paired">No devices have been paired</string>
     <string name="none_found">No devices found</string>
     <string name="title_already_paired_devices">Already Paired Devices</string>
@@ -23,10 +31,6 @@
     <string name="button_rescan">Rescan for devices</string>
     <string name="bluetooth_connected">Connected to: %s</string>
     <string name="bluetooth_not_connected">Bluetooth connection failed. Make sure that you started the server on your pc before you try to connect.</string>
-    <string name="connection_lost">Lost connection to presenter service.</string>
-
-    <string name="next_slide">Next Slide</string>
-    <string name="prev_slide">Previous Slide</string>
 
     <!-- About menu -->
     <string name="about">About %s</string>
