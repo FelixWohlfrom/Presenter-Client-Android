@@ -311,6 +311,7 @@ public class BluetoothPresenterControlTest {
         Thread.sleep(SERVICE_STATE_CHANGE_TIME);
 
         ShadowLooper.runUiThreadTasks();
+        Thread.sleep(150);
         assertThat("Did not receive 'error' event",
                 messageReceived.await(MESSAGE_RECEIVING_TIMEOUT, TimeUnit.MILLISECONDS),
                 is(true));
@@ -330,7 +331,6 @@ public class BluetoothPresenterControlTest {
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
-
         Thread.sleep(SERVICE_STATE_CHANGE_TIME);
         assertThat(control.getState(), is(RemoteControl.ServiceState.CONNECTED));
 
