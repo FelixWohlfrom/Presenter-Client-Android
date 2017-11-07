@@ -76,6 +76,22 @@ public class BluetoothConnector extends Activity
      */
     private Settings mSettings;
 
+    /**
+     * The BroadcastReceiver that listens for bluetooth broadcasts
+     */
+    BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
+                //Device has disconnected
+                Toast.makeText(BluetoothConnector.this, R.string.bluetooth_required_leaving,
+                        Toast.LENGTH_LONG).show();
+                BluetoothConnector.this.finish();
+            }
+        }
+    };
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,20 +108,6 @@ public class BluetoothConnector extends Activity
             return;
         }
 
-        //The BroadcastReceiver that listens for bluetooth broadcasts
-        BroadcastReceiver mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-                if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
-                    //Device has disconnected
-                    Toast.makeText(BluetoothConnector.this, R.string.bluetooth_required_leaving,
-                            Toast.LENGTH_LONG).show();
-                    BluetoothConnector.this.finish();
-                }
-            }
-        };
-
         IntentFilter disconnectFilter = new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED);
         this.registerReceiver(mReceiver, disconnectFilter);
 
@@ -114,6 +116,8 @@ public class BluetoothConnector extends Activity
 
     @Override
     public void onDestroy() {
+        this.unregisterReceiver(mReceiver);
+
         super.onDestroy();
         if (mPresenterControl != null) {
             mPresenterControl.stop();
