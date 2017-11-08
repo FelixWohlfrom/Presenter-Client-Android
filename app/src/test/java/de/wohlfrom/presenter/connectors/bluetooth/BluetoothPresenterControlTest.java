@@ -22,6 +22,7 @@ import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 import android.os.Message;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -72,6 +73,8 @@ public class BluetoothPresenterControlTest {
     /** The time in ms that we want to wait maximum for a message to be received. */
     private static final int MESSAGE_RECEIVING_TIMEOUT = 300;
 
+    private BluetoothPresenterControl control = null;
+
     /**
      * Initialize our fake bluetooth socket.
      * By default, we don't fail the reading and succeed the connection.
@@ -79,8 +82,20 @@ public class BluetoothPresenterControlTest {
      */
     @Before
     public void initBluetoothSocket() {
+        control = null;
+
         ShadowBluetoothSocket.setFailReading(false);
         ShadowBluetoothSocket.setConnectionSucceed(true);
+    }
+
+    /**
+     * Make sure the the bluetooth presenter control is stopped properly.
+     */
+    @After
+    public void cleanupPresenterControl() {
+        if (control != null) {
+            control.stop();
+        }
     }
 
     /**
@@ -88,7 +103,7 @@ public class BluetoothPresenterControlTest {
      */
     @Test
     public void instantiationTest() {
-        BluetoothPresenterControl control = new BluetoothPresenterControl(new Handler() {});
+        control = new BluetoothPresenterControl(new Handler() {});
         assertThat(control, is(notNullValue()));
         assertThat(control.getState(), is(RemoteControl.ServiceState.NONE));
     }
@@ -98,14 +113,11 @@ public class BluetoothPresenterControlTest {
      */
     @Test
     public void testConnectingState() {
-        BluetoothPresenterControl control = new BluetoothPresenterControl(new Handler() {});
+        control = new BluetoothPresenterControl(new Handler() {});
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                                                     .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         assertThat(control.getState(), is(RemoteControl.ServiceState.CONNECTING));
-
-        // Make sure we clean everything up
-        control.stop();
     }
 
     /**
@@ -115,15 +127,12 @@ public class BluetoothPresenterControlTest {
     public void testConnectedStateSuccess() throws InterruptedException {
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        BluetoothPresenterControl control = new BluetoothPresenterControl(new Handler() {});
+        control = new BluetoothPresenterControl(new Handler() {});
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         Thread.sleep(SERVICE_STATE_CHANGE_TIME);
         assertThat(control.getState(), is(RemoteControl.ServiceState.CONNECTED));
-
-        // Make sure we clean everything up
-        control.stop();
     }
 
     /**
@@ -132,15 +141,12 @@ public class BluetoothPresenterControlTest {
     @Test
     public void testConnectedStateFailure() throws InterruptedException {
         ShadowBluetoothSocket.setConnectionSucceed(false);
-        BluetoothPresenterControl control = new BluetoothPresenterControl(new Handler() {});
+        control = new BluetoothPresenterControl(new Handler() {});
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         Thread.sleep(SERVICE_STATE_CHANGE_TIME);
         assertThat(control.getState(), is(RemoteControl.ServiceState.NONE));
-
-        // Make sure we clean everything up
-        control.stop();
     }
 
     /**
@@ -150,15 +156,12 @@ public class BluetoothPresenterControlTest {
     @Test
     public void testConnectedStateFailureInvalidVersion() throws InterruptedException {
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_FAILURE);
-        BluetoothPresenterControl control = new BluetoothPresenterControl(new Handler() {});
+        control = new BluetoothPresenterControl(new Handler() {});
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         Thread.sleep(SERVICE_STATE_CHANGE_TIME);
         assertThat(control.getState(), is(RemoteControl.ServiceState.NONE));
-
-        // Make sure we clean everything up
-        control.stop();
     }
 
     /**
@@ -170,7 +173,7 @@ public class BluetoothPresenterControlTest {
         final CountDownLatch connectingMessageReceived = new CountDownLatch(1);
         final CountDownLatch connectedMessageReceived = new CountDownLatch(1);
 
-        BluetoothPresenterControl control = new BluetoothPresenterControl(new Handler() {
+        control = new BluetoothPresenterControl(new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 if (msg.what == RemoteControl.ServiceState.CONNECTING.ordinal()) {
@@ -203,9 +206,6 @@ public class BluetoothPresenterControlTest {
         assertThat("Did not receive 'connected' message",
                 connectedMessageReceived.await(MESSAGE_RECEIVING_TIMEOUT, TimeUnit.MILLISECONDS),
                 is(true));
-
-        // Make sure we clean everything up
-        control.stop();
     }
 
     /**
@@ -218,7 +218,7 @@ public class BluetoothPresenterControlTest {
         final CountDownLatch connectingMessageReceived = new CountDownLatch(1);
         final CountDownLatch connectedMessageReceived = new CountDownLatch(1);
 
-        BluetoothPresenterControl control = new BluetoothPresenterControl(new Handler() {
+        control = new BluetoothPresenterControl(new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 if (msg.what == RemoteControl.ServiceState.CONNECTING.ordinal()) {
@@ -245,9 +245,6 @@ public class BluetoothPresenterControlTest {
         assertThat("Did not receive 'connected' event",
                 connectedMessageReceived.await(MESSAGE_RECEIVING_TIMEOUT, TimeUnit.MILLISECONDS),
                 is(true));
-
-        // Make sure we clean everything up
-        control.stop();
     }
 
     /**
@@ -259,7 +256,7 @@ public class BluetoothPresenterControlTest {
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_FAILURE);
         final CountDownLatch messageReceived = new CountDownLatch(1);
 
-        BluetoothPresenterControl control = new BluetoothPresenterControl(new Handler() {
+        control = new BluetoothPresenterControl(new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 if (msg.what == RemoteControl.ServiceState.ERROR.ordinal()) {
@@ -280,9 +277,6 @@ public class BluetoothPresenterControlTest {
         assertThat("Did not receive 'error' event",
                 messageReceived.await(MESSAGE_RECEIVING_TIMEOUT, TimeUnit.MILLISECONDS),
                 is(true));
-
-        // Make sure we clean everything up
-        control.stop();
     }
 
     /**
@@ -293,7 +287,7 @@ public class BluetoothPresenterControlTest {
         ShadowBluetoothSocket.setTransmittedString("This is invalid json data\n\n");
         final CountDownLatch messageReceived = new CountDownLatch(1);
 
-        BluetoothPresenterControl control = new BluetoothPresenterControl(new Handler() {
+        control = new BluetoothPresenterControl(new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 if (msg.what == RemoteControl.ServiceState.ERROR.ordinal()) {
@@ -315,9 +309,6 @@ public class BluetoothPresenterControlTest {
         assertThat("Did not receive 'error' event",
                 messageReceived.await(MESSAGE_RECEIVING_TIMEOUT, TimeUnit.MILLISECONDS),
                 is(true));
-
-        // Make sure we clean everything up
-        control.stop();
     }
 
     /**
@@ -327,7 +318,7 @@ public class BluetoothPresenterControlTest {
     public void testClientDisconnected() throws InterruptedException {
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        BluetoothPresenterControl control = new BluetoothPresenterControl(new Handler() {});
+        control = new BluetoothPresenterControl(new Handler() {});
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
@@ -344,7 +335,7 @@ public class BluetoothPresenterControlTest {
      */
     @Test
     public void testServerDisconnectedDuringInformationExchange() throws InterruptedException {
-        BluetoothPresenterControl control = new BluetoothPresenterControl(new Handler() {});
+        control = new BluetoothPresenterControl(new Handler() {});
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
@@ -354,9 +345,6 @@ public class BluetoothPresenterControlTest {
         ShadowBluetoothSocket.setFailReading(true);
         Thread.sleep(SERVICE_STATE_CHANGE_TIME); // Wait some time until the thread really stopped
         assertThat(control.getState(), is(RemoteControl.ServiceState.NONE));
-
-        // Make sure we clean everything up
-        control.stop();
     }
 
     /**
@@ -366,7 +354,7 @@ public class BluetoothPresenterControlTest {
     public void testServerDisconnectedAfterConnectionEstablished() throws InterruptedException {
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        BluetoothPresenterControl control = new BluetoothPresenterControl(new Handler() {});
+        control = new BluetoothPresenterControl(new Handler() {});
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
@@ -376,9 +364,6 @@ public class BluetoothPresenterControlTest {
         ShadowBluetoothSocket.setFailReading(true);
         Thread.sleep(SERVICE_STATE_CHANGE_TIME); // Wait some time until the thread really stopped
         assertThat(control.getState(), is(RemoteControl.ServiceState.NONE));
-
-        // Make sure we clean everything up
-        control.stop();
     }
 
     /**
@@ -390,7 +375,7 @@ public class BluetoothPresenterControlTest {
 
         final CountDownLatch messageReceived = new CountDownLatch(1);
 
-        BluetoothPresenterControl control = new BluetoothPresenterControl(new Handler() {
+        control = new BluetoothPresenterControl(new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 if (msg.what == RemoteControl.ServiceState.NONE.ordinal()) {
@@ -409,9 +394,6 @@ public class BluetoothPresenterControlTest {
         ShadowLooper.runUiThreadTasks();
         assertThat("Handler was not called",
                 messageReceived.await(MESSAGE_RECEIVING_TIMEOUT, TimeUnit.MILLISECONDS), is(true));
-
-        // Make sure we clean everything up
-        control.stop();
     }
 
     /**
@@ -421,7 +403,7 @@ public class BluetoothPresenterControlTest {
     public void testWriteCommand() throws InterruptedException {
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        BluetoothPresenterControl control = new BluetoothPresenterControl(new Handler() {});
+        control = new BluetoothPresenterControl(new Handler() {});
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
@@ -432,8 +414,5 @@ public class BluetoothPresenterControlTest {
         assertThat(ShadowBluetoothSocket.getLastTransmittedString(),
                 is("{ \"type\": \"command\", " +
                         "\"data\": \"" + Command.NEXT_SLIDE.getCommand() + "\"}\n\n"));
-
-        // Make sure we clean everything up
-        control.stop();
     }
 }
