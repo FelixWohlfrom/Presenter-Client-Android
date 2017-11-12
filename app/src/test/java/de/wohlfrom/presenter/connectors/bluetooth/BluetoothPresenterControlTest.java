@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowBluetoothAdapter;
 import org.robolectric.shadows.ShadowBluetoothDevice;
 import org.robolectric.shadows.ShadowLooper;
@@ -69,9 +68,9 @@ public class BluetoothPresenterControlTest {
             " \"data\" = '" + new ProtocolVersion(-1, -1).toString() + "' }\n\n";
 
     /** The time in ms that the service might take to change the state. */
-    private static final int SERVICE_STATE_CHANGE_TIME = 500;
+    private static final int SERVICE_STATE_CHANGE_TIME = 1000;
     /** The time in ms that we want to wait maximum for a message to be received. */
-    private static final int MESSAGE_RECEIVING_TIMEOUT = 300;
+    private static final int MESSAGE_RECEIVING_TIMEOUT = 500;
 
     private BluetoothPresenterControl control = null;
 
