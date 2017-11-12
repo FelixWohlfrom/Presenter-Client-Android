@@ -163,7 +163,7 @@ class BluetoothPresenterControl extends RemoteControl {
         ConnectedThread connectedThread;
         // Synchronize a copy of the ConnectedThread
         synchronized (this) {
-            if (mState != ServiceState.CONNECTED) {
+            if (mState == ServiceState.NONE) {
                 return;
             }
             connectedThread = mConnectedThread;

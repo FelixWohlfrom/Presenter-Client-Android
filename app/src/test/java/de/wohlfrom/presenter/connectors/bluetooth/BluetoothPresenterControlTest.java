@@ -410,6 +410,7 @@ public class BluetoothPresenterControlTest {
         Thread.sleep(SERVICE_STATE_CHANGE_TIME);
         assertThat(control.getState(), is(RemoteControl.ServiceState.CONNECTED));
 
+        ShadowBluetoothSocket.resetLastTransmittedString();
         control.sendCommand(Command.NEXT_SLIDE);
         assertThat(ShadowBluetoothSocket.getLastTransmittedString(),
                 is("{ \"type\": \"command\", " +

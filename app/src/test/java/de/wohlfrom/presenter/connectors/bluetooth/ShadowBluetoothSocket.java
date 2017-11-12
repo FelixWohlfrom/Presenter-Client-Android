@@ -164,6 +164,14 @@ public class ShadowBluetoothSocket {
     }
 
     /**
+     * Resets the last transmitted string. Can be used to ensure you get just the data you
+     * have written since the last call of this method.
+     */
+    static void resetLastTransmittedString() {
+        transmittedStringWriter.reset();
+    }
+
+    /**
      * Returns the last string transmitted via input stream.
      *
      * @return The string received since last call of this method.
