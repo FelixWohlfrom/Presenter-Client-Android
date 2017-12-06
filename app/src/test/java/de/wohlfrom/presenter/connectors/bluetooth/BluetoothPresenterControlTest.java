@@ -415,4 +415,18 @@ public class BluetoothPresenterControlTest {
                 is("{ \"type\": \"command\", " +
                         "\"data\": \"" + Command.NEXT_SLIDE.getCommand() + "\"}\n\n"));
     }
+
+    /**
+     * This test verifies that the bluetooth presenter control won't crash with a null pointer
+     * exception if no connection has been initiated yet.
+     */
+    @Test
+    public void testDisconnectingOnNoConnection() {
+        ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
+        control = new BluetoothPresenterControl(new Handler() {});
+
+        // Try to disconnect, although we didn't initiate a connection yet.
+        // Should not produce a null pointer exception.
+        control.disconnect();
+    }
 }
