@@ -203,7 +203,9 @@ class BluetoothPresenterControl extends RemoteControl {
     protected void disconnect() {
         // This will signal the reader thread to stop reading
         mState = ServiceState.NONE;
-        mConnectedThread.cancel();
+        if (mConnectedThread != null) {
+            mConnectedThread.cancel();
+        }
     }
 
     /**
