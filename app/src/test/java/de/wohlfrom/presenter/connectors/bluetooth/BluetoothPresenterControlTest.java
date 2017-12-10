@@ -40,6 +40,7 @@ import de.wohlfrom.presenter.connectors.Command;
 import de.wohlfrom.presenter.connectors.ProtocolVersion;
 import de.wohlfrom.presenter.connectors.RemoteControl;
 
+import static junit.framework.Assert.fail;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -68,9 +69,13 @@ public class BluetoothPresenterControlTest {
             " \"data\" = '" + new ProtocolVersion(-1, -1).toString() + "' }\n\n";
 
     /** The time in ms that the service might take to change the state. */
-    private static final int SERVICE_STATE_CHANGE_TIME = 1000;
+    private static final int SERVICE_STATE_CHANGE_TIME = 20000;
+    /** The time in ms in which the service state should be checked for changes */
+    private static final int SERVICE_STATE_CHECK_TIME = 500;
     /** The time in ms that we want to wait maximum for a message to be received. */
-    private static final int MESSAGE_RECEIVING_TIMEOUT = 500;
+    private static final int MESSAGE_RECEIVING_TIMEOUT = 30000;
+    /** The time in ms in which the message reception should be checked */
+    private static final int MESSAGE_CHECK_TIME = 500;
 
     private BluetoothPresenterControl control = null;
 
@@ -130,8 +135,7 @@ public class BluetoothPresenterControlTest {
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
-        Thread.sleep(SERVICE_STATE_CHANGE_TIME);
-        assertThat(control.getState(), is(RemoteControl.ServiceState.CONNECTED));
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
     }
 
     /**
@@ -144,8 +148,7 @@ public class BluetoothPresenterControlTest {
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
-        Thread.sleep(SERVICE_STATE_CHANGE_TIME);
-        assertThat(control.getState(), is(RemoteControl.ServiceState.NONE));
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
     }
 
     /**
@@ -159,8 +162,8 @@ public class BluetoothPresenterControlTest {
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
-        Thread.sleep(SERVICE_STATE_CHANGE_TIME);
-        assertThat(control.getState(), is(RemoteControl.ServiceState.NONE));
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
     }
 
     /**
@@ -196,9 +199,9 @@ public class BluetoothPresenterControlTest {
                 .getRemoteDevice(DEVICE_ADDRESS);
         shadowOf(bluetoothDevice).setName(DEVICE_NAME);
         control.connect(bluetoothDevice);
-        Thread.sleep(SERVICE_STATE_CHANGE_TIME);
-
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
         ShadowLooper.runUiThreadTasks();
+
         assertThat("Did not receive 'connecting' message",
                 connectingMessageReceived.await(MESSAGE_RECEIVING_TIMEOUT, TimeUnit.MILLISECONDS),
                 is(true));
@@ -235,7 +238,8 @@ public class BluetoothPresenterControlTest {
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
-        Thread.sleep(SERVICE_STATE_CHANGE_TIME);
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
 
         ShadowLooper.runUiThreadTasks();
         assertThat("Did not receive 'connecting' event",
@@ -270,7 +274,8 @@ public class BluetoothPresenterControlTest {
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
-        Thread.sleep(SERVICE_STATE_CHANGE_TIME);
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
 
         ShadowLooper.runUiThreadTasks();
         assertThat("Did not receive 'error' event",
@@ -301,13 +306,17 @@ public class BluetoothPresenterControlTest {
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
-        Thread.sleep(SERVICE_STATE_CHANGE_TIME);
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
 
-        ShadowLooper.runUiThreadTasks();
-        Thread.sleep(150);
-        assertThat("Did not receive 'error' event",
-                messageReceived.await(MESSAGE_RECEIVING_TIMEOUT, TimeUnit.MILLISECONDS),
-                is(true));
+        long startTime = System.currentTimeMillis();
+        while (System.currentTimeMillis() < startTime + MESSAGE_RECEIVING_TIMEOUT) {
+            Thread.sleep(MESSAGE_CHECK_TIME);
+            ShadowLooper.runUiThreadTasks();
+            if (messageReceived.await(MESSAGE_CHECK_TIME, TimeUnit.MILLISECONDS)) {
+                return;
+            }
+        }
+        fail("Did not receive 'error' event");
     }
 
     /**
@@ -321,8 +330,7 @@ public class BluetoothPresenterControlTest {
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
-        Thread.sleep(SERVICE_STATE_CHANGE_TIME);
-        assertThat(control.getState(), is(RemoteControl.ServiceState.CONNECTED));
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
 
         control.stop();
         assertThat(control.getState(), is(RemoteControl.ServiceState.NONE));
@@ -338,12 +346,11 @@ public class BluetoothPresenterControlTest {
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
-        Thread.sleep(SERVICE_STATE_CHANGE_TIME);
-        assertThat(control.getState(), is(RemoteControl.ServiceState.CONNECTING));
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
 
         ShadowBluetoothSocket.setFailReading(true);
-        Thread.sleep(SERVICE_STATE_CHANGE_TIME); // Wait some time until the thread really stopped
-        assertThat(control.getState(), is(RemoteControl.ServiceState.NONE));
+        // Wait some time until the thread really stopped
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
     }
 
     /**
@@ -357,12 +364,11 @@ public class BluetoothPresenterControlTest {
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
-        Thread.sleep(SERVICE_STATE_CHANGE_TIME);
-        assertThat(control.getState(), is(RemoteControl.ServiceState.CONNECTED));
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
 
         ShadowBluetoothSocket.setFailReading(true);
-        Thread.sleep(SERVICE_STATE_CHANGE_TIME); // Wait some time until the thread really stopped
-        assertThat(control.getState(), is(RemoteControl.ServiceState.NONE));
+        // Wait some time until the thread really stopped
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
     }
 
     /**
@@ -385,11 +391,10 @@ public class BluetoothPresenterControlTest {
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
-        Thread.sleep(SERVICE_STATE_CHANGE_TIME);
-        assertThat(control.getState(), is(RemoteControl.ServiceState.CONNECTED));
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
 
         ShadowBluetoothSocket.setFailReading(true);
-        Thread.sleep(SERVICE_STATE_CHANGE_TIME);
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
         ShadowLooper.runUiThreadTasks();
         assertThat("Handler was not called",
                 messageReceived.await(MESSAGE_RECEIVING_TIMEOUT, TimeUnit.MILLISECONDS), is(true));
@@ -406,8 +411,7 @@ public class BluetoothPresenterControlTest {
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
-        Thread.sleep(SERVICE_STATE_CHANGE_TIME);
-        assertThat(control.getState(), is(RemoteControl.ServiceState.CONNECTED));
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
 
         ShadowBluetoothSocket.resetLastTransmittedString();
         control.sendCommand(Command.NEXT_SLIDE);
@@ -428,5 +432,29 @@ public class BluetoothPresenterControlTest {
         // Try to disconnect, although we didn't initiate a connection yet.
         // Should not produce a null pointer exception.
         control.disconnect();
+    }
+
+    /**
+     * Will wait for a given service state is reached.
+     * Maximum waiting time in ms is defined in {@link #SERVICE_STATE_CHANGE_TIME}.
+     *
+     * @param control The control on which the service state should be recognized
+     * @param targetState The target state to reach
+     * @throws InterruptedException If waiting for device state change failed
+     */
+    private void waitForServiceStateChanged(BluetoothPresenterControl control,
+                                            RemoteControl.ServiceState targetState)
+            throws InterruptedException {
+        long startTime = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() < startTime + SERVICE_STATE_CHANGE_TIME) {
+            if (control.getState() == targetState) {
+                return;
+            }
+
+            Thread.sleep(SERVICE_STATE_CHECK_TIME);
+        }
+        fail("Did not reach target state <" + targetState + ">. " +
+                "Instead, was in state <" + control.getState() +">.");
     }
 }
