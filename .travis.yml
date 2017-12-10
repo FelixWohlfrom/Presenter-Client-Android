@@ -33,13 +33,13 @@ before_script:
   - sdkmanager --install "extras;google;m2repository" > /dev/null
   - sdkmanager --install emulator > /dev/null
 
-  # Create and start emulator"
+  # Create and start emulator
   - echo no | avdmanager create avd --force --name test --package "system-images;android-$TARGET_API;google_apis;$TARGET_ABI"
   - cd $ANDROID_HOME/emulator/ && ./emulator -avd test -no-audio -no-window &
 
 script:
   - set -e
   - ./gradlew build assembleAndroidTest test
-  - android-wait-for-emulator
+  - ./android-wait-for-emulator.sh
   - adb shell input keyevent 82 &
   - ./gradlew connectedAndroidTest
