@@ -28,6 +28,11 @@ android {
             events 'passed', 'skipped', 'failed', 'standardOut', 'standardError'
         }
     }
+
+    // Increase timeout for adb operations in slow environments like travis ci
+    adbOptions {
+        timeOutInMs 10 * 60 * 1000  // 10 minutes
+    }
 }
 
 dependencies {
