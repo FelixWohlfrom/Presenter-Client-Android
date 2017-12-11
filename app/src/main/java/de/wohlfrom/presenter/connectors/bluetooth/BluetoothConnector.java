@@ -83,7 +83,10 @@ public class BluetoothConnector extends Activity
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
+
+            if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)
+                    && intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)
+                        == BluetoothAdapter.STATE_OFF) {
                 //Device has disconnected
                 Toast.makeText(BluetoothConnector.this, R.string.bluetooth_required_leaving,
                         Toast.LENGTH_LONG).show();
@@ -108,7 +111,7 @@ public class BluetoothConnector extends Activity
             return;
         }
 
-        IntentFilter disconnectFilter = new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        IntentFilter disconnectFilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         this.registerReceiver(mReceiver, disconnectFilter);
 
         setContentView(R.layout.activity_bluetooth_connector);
