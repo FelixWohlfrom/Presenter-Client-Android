@@ -11,24 +11,35 @@ cache:
     - $HOME/.gradle/wrapper/
     - $HOME/.android/build-cache
 
+env:
+  - TARGET_API=22 TARGET_ABI=armeabi-v7a
+  - TARGET_API=23 TARGET_ABI=armeabi-v7a
+  - TARGET_API=24 TARGET_ABI=armeabi-v7a
+  - TARGET_API=25 TARGET_ABI=armeabi-v7a
+
 android:
   components:
     - tools
-    - platform-tools
-    - tools
-    - build-tools-26.0.2
-    - android-22
-    - sys-img-armeabi-v7a-android-22
-    - extra-android-m2repository
 
 before_script:
+  # Install latest emulator images
+  # suppressing output of sdkmanager to keep log under 4MB (travis limit)
+  - echo yes | sdkmanager tools
+  - yes | sdkmanager --licenses
+  - sdkmanager --install platform-tools > /dev/null
+  - sdkmanager --install "build-tools;26.0.2" > /dev/null
+  - sdkmanager --install "platforms;android-22" > /dev/null
+  - sdkmanager --install "system-images;android-$TARGET_API;google_apis;$TARGET_ABI" > /dev/null
+  - sdkmanager --install "extras;google;m2repository" > /dev/null
+  - sdkmanager --install emulator > /dev/null
+
   # Create and start emulator
-  - echo no | android create avd --force -n test -t android-22
-  - emulator -avd test -no-audio -no-window &
+  - echo no | avdmanager create avd --force --name test --package "system-images;android-$TARGET_API;google_apis;$TARGET_ABI"
+  - cd $ANDROID_HOME/emulator/ && ./emulator -avd test -no-audio -no-window &
 
 script:
   - set -e
   - ./gradlew build assembleAndroidTest test
-  - android-wait-for-emulator
+  - ./android-wait-for-emulator.sh
   - adb shell input keyevent 82 &
   - ./gradlew connectedAndroidTest
