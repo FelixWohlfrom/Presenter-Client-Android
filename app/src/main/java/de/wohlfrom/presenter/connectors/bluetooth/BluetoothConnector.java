@@ -72,6 +72,11 @@ public class BluetoothConnector extends Activity
     private boolean mPresenterVisible = false;
 
     /**
+     * Stores if the current visibility state of the bluetooth connector.
+     */
+    private boolean mBluetoothConnectorVisible = false;
+
+    /**
      * The settings instance
      */
     private Settings mSettings;
@@ -128,12 +133,17 @@ public class BluetoothConnector extends Activity
     }
 
     @Override
+    public void onPause() {
+        mBluetoothConnectorVisible = false;
+
+        super.onPause();
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
-        // FIXME Check why we switch back to main menu after a few seconds after connection
-        // to server is lost
-
         mPresenterVisible = false;
+        mBluetoothConnectorVisible = true;
 
         // If BT is not on, request that it be enabled.
         if (!mBluetoothAdapter.isEnabled()) {
@@ -256,7 +266,9 @@ public class BluetoothConnector extends Activity
             }
 
             if (getFragmentManager().getBackStackEntryCount() > 0) {
-                getFragmentManager().popBackStack();
+                if (mBluetoothConnectorVisible) {
+                    getFragmentManager().popBackStack();
+                }
 
                 mPresenterVisible = false;
             }
