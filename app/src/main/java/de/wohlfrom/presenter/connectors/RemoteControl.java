@@ -171,10 +171,6 @@ public abstract class RemoteControl {
 
                     setActiveProtocolVersion(serverVersion);
 
-                    PresenterMessage clientVersion = new PresenterMessage(MessageType.VERSION,
-                            CLIENT_PROTOCOL_VERSION.toString());
-                    sendMessage(clientVersion);
-
                     // Check if we have a common range of min and max versions. If not, disconnect.
                     if (mActiveProtocolVersion.getMinVersion()
                             > mActiveProtocolVersion.getMaxVersion()) {
