@@ -38,4 +38,5 @@
     <string name="copyright">Copyright © <xliff:g id="author_name">Felix Wohlfrom</xliff:g></string>
     <string name="license">This app is licensed under <a href="https://www.gnu.org/licenses/gpl-3.0.txt">GNU GPLv3</a>.\nIcon by <a href="https://www.iconfinder.com/icons/473643/computer_desktop_device_hardware_monitor_pc_server_icon">Maxim Basinski</a>.</string>
     <string name="howto">You need a server software to properly use this app. Please check <a href="https://github.com/FelixWohlfrom/Presenter-Server">https://github.com/FelixWohlfrom/Presenter-Server</a> on how to download the server and execute it on your controlled system.</string>
+    <string name="app_icon_description">App icon</string>
 </resources>
