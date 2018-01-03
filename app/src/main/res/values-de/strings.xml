@@ -4,7 +4,7 @@
     <string name="settings">Einstellungen</string>
     <string name="connect_via_bluetooth">Per Bluetooth verbinden</string>
     <string name="next_slide">Nächste Folie</string>
-    <string name="prev_slide">Vorhergehende Folie</string>
+    <string name="prev_slide">Vorherige Folie</string>
     <string name="bluetooth_not_available">Bluetooth ist nicht verfügbar</string>
     <string name="button_scan">Nach weiteren Geräten suchen</string>
     <string name="disable_audio">Gerät während der Präsentation stummschalten</string>
