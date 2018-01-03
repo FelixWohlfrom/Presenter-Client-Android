@@ -27,4 +27,5 @@
     <string name="incompatible_server_version">"Inkompatible Version des Servers gefunden. Stelle sicher dass sowohl die App als auch der Server auf dem aktuellen Stand sind. "</string>
     <string name="connecting_to_service">Verbinde mit Presenter Service. Bitte warten…</string>
     <string name="parsing_error">Fehler beim Analysieren der Informationen des Servers.</string>
+    <string name="app_icon_description">App icon</string>
 </resources>
