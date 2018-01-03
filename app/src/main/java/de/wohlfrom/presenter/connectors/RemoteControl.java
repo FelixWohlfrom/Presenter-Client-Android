@@ -6,6 +6,8 @@ import android.os.Handler;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Locale;
+
 /**
  * The base class for all remote control connections. This class is used to handle version
  * negotiation and transmitting commands via different networks.
@@ -65,7 +67,7 @@ public abstract class RemoteControl {
         @Override
         public String toString() {
             return "{" +
-                    " \"type\": \"" + type.toString().toLowerCase() + "\"," +
+                    " \"type\": \"" + type.toString().toLowerCase(Locale.getDefault()) + "\"," +
                     " \"data\": \"" + data + "\"" +
                     "}";
         }
@@ -158,7 +160,8 @@ public abstract class RemoteControl {
             String data = parser.getString("data");
 
             PresenterMessage msg =
-                    new PresenterMessage(MessageType.valueOf(type.toUpperCase()), data);
+                    new PresenterMessage(
+                            MessageType.valueOf(type.toUpperCase(Locale.getDefault())), data);
             switch (msg.type) {
                 case VERSION:
                     // Parse the version from given message
