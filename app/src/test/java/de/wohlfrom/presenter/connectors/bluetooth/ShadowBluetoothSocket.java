@@ -26,6 +26,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -41,7 +42,7 @@ import java.io.OutputStream;
  * The class needs to be public to make Robolectric happy.
  */
 @Implements(BluetoothSocket.class)
-public class ShadowBluetoothSocket {
+public class ShadowBluetoothSocket implements Closeable {
     /**
      * Stores the configurations for our socket.
      *
@@ -104,25 +105,25 @@ public class ShadowBluetoothSocket {
             = new ByteArrayOutputStream();
 
     @Implementation
-    public void __constructor__(int type, int fd, boolean auth, boolean encrypt,
+    protected void __constructor__(int type, int fd, boolean auth, boolean encrypt,
                         BluetoothDevice device, int port, ParcelUuid uuid) throws IOException {
         // Empty dummy
     }
 
     @Implementation
-    public void connect() throws IOException {
+    protected void connect() throws IOException {
         if (!connectionSucceed) {
             throw new IOException("Connection failed");
         }
     }
 
     @Implementation
-    public InputStream getInputStream() throws IOException {
+    protected InputStream getInputStream() throws IOException {
         return receivedStringWriter;
     }
 
     @Implementation
-    public OutputStream getOutputStream() throws IOException {
+    protected OutputStream getOutputStream() throws IOException {
         return transmittedStringWriter;
     }
 
