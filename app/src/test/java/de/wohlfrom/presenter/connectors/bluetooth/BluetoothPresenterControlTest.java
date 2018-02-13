@@ -52,6 +52,7 @@ import static org.robolectric.Shadows.shadowOf;
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class,
+        manifest = Config.NONE,
         shadows = {ShadowBluetoothAdapter.class, ShadowBluetoothDevice.class,
                 ShadowBluetoothSocket.class})
 public class BluetoothPresenterControlTest {
