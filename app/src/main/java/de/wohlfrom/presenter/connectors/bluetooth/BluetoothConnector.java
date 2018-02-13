@@ -286,21 +286,11 @@ public class BluetoothConnector extends Activity
      * @param data        Additional data, unused.
      */
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_ENABLE_BT) {
-            // When the request to enable Bluetooth returns
-            if (resultCode == Activity.RESULT_OK) {
-                // Show device selection fragment
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
-                Fragment fragment = new DeviceSelector();
-                transaction.replace(R.id.connector_content, fragment);
-                transaction.commit();
-
-            } else {
-                // User did not enable Bluetooth or an error occurred
-                Toast.makeText(this, R.string.bluetooth_required_leaving,
-                        Toast.LENGTH_LONG).show();
-                this.finish();
-            }
+        if (requestCode == REQUEST_ENABLE_BT && resultCode != Activity.RESULT_OK) {
+            // User did not enable Bluetooth or an error occurred
+            Toast.makeText(this, R.string.bluetooth_required_leaving,
+                    Toast.LENGTH_LONG).show();
+            this.finish();
         }
     }
 
