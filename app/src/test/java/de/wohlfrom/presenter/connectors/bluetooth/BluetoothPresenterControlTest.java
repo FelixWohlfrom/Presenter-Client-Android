@@ -71,7 +71,7 @@ public class BluetoothPresenterControlTest {
     /** The time in ms that the service might take to change the state. */
     private static final int SERVICE_STATE_CHANGE_TIME = 20000;
     /** The time in ms in which the service state should be checked for changes */
-    private static final int SERVICE_STATE_CHECK_TIME = 500;
+    private static final int SERVICE_STATE_CHECK_TIME = 2000;
     /** The time in ms that we want to wait maximum for a message to be received. */
     private static final int MESSAGE_RECEIVING_TIMEOUT = 30000;
     /** The time in ms in which the message reception should be checked */
