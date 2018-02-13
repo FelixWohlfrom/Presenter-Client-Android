@@ -48,6 +48,11 @@ import static org.hamcrest.Matchers.notNullValue;
 public class SettingsActivityTest {
 
     /**
+     * Timeout for elements to react in android emulator.
+     */
+    private static final int RESPONSE_TIMEOUT = 2000;
+
+    /**
      * Store the settings before tests and restore them after test execution.
      */
     private boolean silenceDuringPresentation;
@@ -104,26 +109,26 @@ public class SettingsActivityTest {
     public void verifySilenceDuringPresentationStoring() throws InterruptedException {
         onView(withId(R.id.silenceDuringPresentation))
                 .perform(click());
-        Thread.sleep(1000);
+        Thread.sleep(RESPONSE_TIMEOUT);
         onView(withId(R.id.silenceDuringPresentation))
                 .check(matches(isChecked()));
 
         settingsActivityRule.getActivity().onStop();
         settingsActivityRule.getActivity().finish();
-        Thread.sleep(1000);
+        Thread.sleep(RESPONSE_TIMEOUT);
         assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
 
         settingsActivityRule.launchActivity(null);
         onView(withId(R.id.silenceDuringPresentation))
                 .check(matches(isChecked()))
                 .perform(click());
-        Thread.sleep(1000);
+        Thread.sleep(RESPONSE_TIMEOUT);
         onView(withId(R.id.silenceDuringPresentation))
                 .check(matches(isNotChecked()));
 
         settingsActivityRule.getActivity().onStop();
         settingsActivityRule.getActivity().finish();
-        Thread.sleep(1000);
+        Thread.sleep(RESPONSE_TIMEOUT);
         assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
 
         settingsActivityRule.launchActivity(null);
@@ -142,26 +147,26 @@ public class SettingsActivityTest {
     public void verifyUseVolumeKeysForNavigationStoring() throws InterruptedException {
         onView(withId(R.id.useVolumeKeysForNavigation))
                 .perform(click());
-        Thread.sleep(1000);
+        Thread.sleep(RESPONSE_TIMEOUT);
         onView(withId(R.id.useVolumeKeysForNavigation))
                 .check(matches(isNotChecked()));
 
         settingsActivityRule.getActivity().onStop();
         settingsActivityRule.getActivity().finish();
-        Thread.sleep(1000);
+        Thread.sleep(RESPONSE_TIMEOUT);
         assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
 
         settingsActivityRule.launchActivity(null);
         onView(withId(R.id.useVolumeKeysForNavigation))
                 .check(matches(isNotChecked()))
                 .perform(click());
-        Thread.sleep(1000);
+        Thread.sleep(RESPONSE_TIMEOUT);
         onView(withId(R.id.useVolumeKeysForNavigation))
                 .check(matches(isChecked()));
 
         settingsActivityRule.getActivity().onStop();
         settingsActivityRule.getActivity().finish();
-        Thread.sleep(1000);
+        Thread.sleep(RESPONSE_TIMEOUT);
         assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
 
         settingsActivityRule.launchActivity(null);
