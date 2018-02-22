@@ -18,6 +18,7 @@
 
 package de.wohlfrom.presenter.connectors.bluetooth;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -85,9 +86,26 @@ public class DeviceSelector extends Fragment {
         return inflater.inflate(R.layout.fragment_device_selector, container, false);
     }
 
+    // Required for backwards compatibility
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        initListener(activity);
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        initListener(context);
+    }
+
+    /**
+     * Initializes the device list result listener.
+     *
+     * @param context The context that should be used as listener. Needs to implement
+     *                {@link DeviceListResultListener}
+     */
+    private void initListener(Context context) {
         try {
             mListener = (DeviceListResultListener) context;
         } catch (ClassCastException e) {

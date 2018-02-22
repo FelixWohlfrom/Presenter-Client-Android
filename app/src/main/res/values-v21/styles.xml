@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Presenter" parent="android:Theme.Material"/>
+    <style name="Presenter.TextAppearance.Large"
+           parent="android:TextAppearance.Material.Large" />
+</resources>
