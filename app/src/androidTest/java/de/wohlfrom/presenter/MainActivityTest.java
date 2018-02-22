@@ -18,6 +18,7 @@
 
 package de.wohlfrom.presenter;
 
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.matcher.BoundedMatcher;
 import android.support.test.filters.MediumTest;
@@ -37,6 +38,8 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withResourceName;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -73,8 +76,14 @@ public class MainActivityTest {
                 InstrumentationRegistry.getTargetContext().getString(R.string.settings);
 
         onView(withId(R.id.settings)).perform(click());
-        onView(isAssignableFrom(Toolbar.class))
-                .check(matches(withToolbarTitle(is(settingsTitle))));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            onView(isAssignableFrom(Toolbar.class))
+                    .check(matches(withToolbarTitle(is(settingsTitle))));
+        } else {
+            onView(withResourceName("action_bar_title"))
+                    .check(matches(withText(settingsTitle.toString())));
+        }
     }
 
     /**
@@ -88,8 +97,14 @@ public class MainActivityTest {
                         InstrumentationRegistry.getTargetContext().getString(R.string.app_name));
 
         onView(withId(R.id.about)).perform(click());
-        onView(isAssignableFrom(Toolbar.class))
-                .check(matches(withToolbarTitle(is(aboutTitle))));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            onView(isAssignableFrom(Toolbar.class))
+                    .check(matches(withToolbarTitle(is(aboutTitle))));
+        } else {
+            onView(withResourceName("action_bar_title"))
+                    .check(matches(withText(aboutTitle.toString())));
+        }
     }
 
     /**

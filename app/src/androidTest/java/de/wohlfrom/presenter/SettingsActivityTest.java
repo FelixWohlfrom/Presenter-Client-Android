@@ -18,6 +18,7 @@
 
 package de.wohlfrom.presenter;
 
+import android.os.Build;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.RequiresDevice;
 import android.support.test.filters.SmallTest;
@@ -116,7 +117,9 @@ public class SettingsActivityTest {
         settingsActivityRule.getActivity().onStop();
         settingsActivityRule.getActivity().finish();
         Thread.sleep(RESPONSE_TIMEOUT);
-        assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
+        }
 
         settingsActivityRule.launchActivity(null);
         onView(withId(R.id.silenceDuringPresentation))
@@ -129,7 +132,9 @@ public class SettingsActivityTest {
         settingsActivityRule.getActivity().onStop();
         settingsActivityRule.getActivity().finish();
         Thread.sleep(RESPONSE_TIMEOUT);
-        assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
+        }
 
         settingsActivityRule.launchActivity(null);
         onView(withId(R.id.silenceDuringPresentation)).check(matches(isNotChecked()));
@@ -154,7 +159,9 @@ public class SettingsActivityTest {
         settingsActivityRule.getActivity().onStop();
         settingsActivityRule.getActivity().finish();
         Thread.sleep(RESPONSE_TIMEOUT);
-        assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
+        }
 
         settingsActivityRule.launchActivity(null);
         onView(withId(R.id.useVolumeKeysForNavigation))
@@ -167,7 +174,9 @@ public class SettingsActivityTest {
         settingsActivityRule.getActivity().onStop();
         settingsActivityRule.getActivity().finish();
         Thread.sleep(RESPONSE_TIMEOUT);
-        assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
+        }
 
         settingsActivityRule.launchActivity(null);
         onView(withId(R.id.useVolumeKeysForNavigation)).check(matches(isChecked()));
