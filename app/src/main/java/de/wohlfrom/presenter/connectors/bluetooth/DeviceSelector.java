@@ -128,6 +128,7 @@ public class DeviceSelector extends Fragment {
                 mNewDevicesArrayAdapter.clear();
                 getActivity().findViewById(R.id.title_new_devices).setVisibility(View.VISIBLE);
                 getActivity().findViewById(R.id.device_scanning_active).setVisibility(View.VISIBLE);
+                getActivity().findViewById(R.id.new_devices).setVisibility(View.GONE);
                 view.setVisibility(View.GONE);
             }
         });
@@ -246,6 +247,7 @@ public class DeviceSelector extends Fragment {
                 getActivity().findViewById(R.id.device_scanning_active)
                         .setVisibility(View.INVISIBLE);
 
+                getActivity().findViewById(R.id.new_devices).setVisibility(View.VISIBLE);
                 getActivity().findViewById(R.id.button_scan).setVisibility(View.VISIBLE);
                 ((Button) getActivity().findViewById(R.id.button_scan))
                         .setText(R.string.button_rescan);

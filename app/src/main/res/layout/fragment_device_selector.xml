@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".connectors.bluetooth.DeviceSelector">
 
     <TextView
         android:id="@+id/title_already_paired_devices"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:background="#333"
         android:padding="5dp"
         android:text="@string/title_already_paired_devices"
@@ -19,16 +19,14 @@
     <ListView
         android:id="@+id/paired_devices"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/title_already_paired_devices"
-        android:minHeight="10dp"
+        android:layout_weight="4"
+        android:layout_height="0dp"
         />
 
     <TextView
         android:id="@+id/title_new_devices"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/paired_devices"
         android:background="#333"
         android:padding="5dp"
         android:text="@string/title_other_devices"
@@ -39,19 +37,18 @@
     <ListView
         android:id="@+id/new_devices"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/title_new_devices"
-        android:minHeight="10dp"
-        >
-    </ListView>
+        android:layout_weight="1"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        />
 
     <ProgressBar
         android:id="@+id/device_scanning_active"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/new_devices"
+        android:layout_weight="3"
+        android:layout_gravity="center"
         android:indeterminate="true"
-        android:layout_centerHorizontal="true"
         android:visibility="gone"
         />
 
@@ -59,7 +56,6 @@
         android:id="@+id/button_scan"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:text="@string/button_scan"
         />
-</RelativeLayout>
+</LinearLayout>
