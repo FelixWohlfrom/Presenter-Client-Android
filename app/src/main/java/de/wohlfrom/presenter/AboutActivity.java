@@ -20,8 +20,11 @@ package de.wohlfrom.presenter;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
+
+import de.wohlfrom.presenter.connectors.RemoteControl;
 
 /**
  * Shows information about our app.
@@ -38,9 +41,15 @@ public class AboutActivity extends Activity {
         ((TextView)findViewById(R.id.appVersionView)).setText(
                 getString(R.string.version, BuildConfig.VERSION_NAME));
 
+        ((TextView)findViewById(R.id.protocol_version)).setText(
+                Html.fromHtml(getString(R.string.protocol_version,
+                        RemoteControl.CLIENT_PROTOCOL_VERSION.getMinVersion(),
+                        RemoteControl.CLIENT_PROTOCOL_VERSION.getMaxVersion())));
 
         // Make links clickable
         ((TextView)findViewById(R.id.license)).setMovementMethod(LinkMovementMethod.getInstance());
         ((TextView)findViewById(R.id.howto)).setMovementMethod(LinkMovementMethod.getInstance());
+        ((TextView)findViewById(R.id.protocol_version))
+                .setMovementMethod(LinkMovementMethod.getInstance());
     }
 }

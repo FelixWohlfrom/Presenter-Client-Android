@@ -30,7 +30,7 @@ public class ProtocolVersion {
      *
      * @return The minimum protocol version.
      */
-    int getMinVersion() {
+    public int getMinVersion() {
         return minVersion;
     }
 
@@ -39,7 +39,7 @@ public class ProtocolVersion {
      *
      * @return The maximum protocol version.
      */
-    int getMaxVersion() {
+    public int getMaxVersion() {
         return maxVersion;
     }
 
