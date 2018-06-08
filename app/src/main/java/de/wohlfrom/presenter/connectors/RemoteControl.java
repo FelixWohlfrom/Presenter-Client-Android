@@ -96,7 +96,7 @@ public abstract class RemoteControl {
     /**
      * The protocol version supported by our android client.
      */
-    public final static ProtocolVersion CLIENT_PROTOCOL_VERSION = new ProtocolVersion(1, 1);
+    public final static ProtocolVersion CLIENT_PROTOCOL_VERSION = new ProtocolVersion(1, 2);
 
     /**
      * The resulting protocol version negotiated between server and client.
@@ -144,6 +144,17 @@ public abstract class RemoteControl {
                 CLIENT_PROTOCOL_VERSION.getMaxVersion());
 
         mActiveProtocolVersion = new ProtocolVersion(minProtocolVersion, maxProtocolVersion);
+    }
+
+    /**
+     * Returns the currently active protocol version.
+     * Only ensured to be a valid version if the remote control is in
+     * ServiceState.CONNECTED
+     *
+     * @return The currently active protocol version
+     */
+    public ProtocolVersion getActiveProtocolVersion() {
+        return mActiveProtocolVersion;
     }
 
     /**

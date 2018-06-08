@@ -225,7 +225,8 @@ public class BluetoothConnector extends Activity
 
                     // show presenter fragment
                     FragmentTransaction transaction = getFragmentManager().beginTransaction();
-                    Fragment fragment = new Presenter();
+                    Fragment fragment = Presenter.newInstance(
+                            mPresenterControl.getActiveProtocolVersion());
                     transaction.replace(R.id.connector_content, fragment);
                     transaction.addToBackStack(null);
                     transaction.commit();
@@ -351,5 +352,15 @@ public class BluetoothConnector extends Activity
     @Override
     public void onNextSlide() {
         mPresenterControl.sendCommand(Command.NEXT_SLIDE);
+    }
+
+    @Override
+    public void onStartPresentation() {
+        mPresenterControl.sendCommand(Command.START_PRESENTATION);
+    }
+
+    @Override
+    public void onStopPresentation() {
+        mPresenterControl.sendCommand(Command.STOP_PRESENTATION);
     }
 }

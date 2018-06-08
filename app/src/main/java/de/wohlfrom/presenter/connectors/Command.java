@@ -7,12 +7,22 @@ public enum Command {
     /**
      * Request switch to previous slide.
      */
-    PREV_SLIDE("prevSlide", 1, 1),
+    PREV_SLIDE("prevSlide", 1, 2),
 
     /**
      * Request switch to next slide.
      */
-    NEXT_SLIDE("nextSlide", 1, 1);
+    NEXT_SLIDE("nextSlide", 1, 2),
+
+    /**
+     * Request to start the presentation.
+     */
+    START_PRESENTATION("startPresentation", 2, 2),
+
+    /**
+     * Request to stop the presentation.
+     */
+    STOP_PRESENTATION("stopPresentation", 2, 2);
 
     /**
      * The command to send.

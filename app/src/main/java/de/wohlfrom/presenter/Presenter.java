@@ -18,21 +18,33 @@
 
 package de.wohlfrom.presenter;
 
+import android.support.annotation.NonNull;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v13.app.FragmentStatePagerAdapter;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import de.wohlfrom.presenter.connectors.Command;
+import de.wohlfrom.presenter.connectors.ProtocolVersion;
+
 import static android.content.Context.AUDIO_SERVICE;
 
 /**
- * This fragment displays the main presenter. It has two buttons, one that shows the next slide
- * and one that shows the previous slides.
+ * This fragment displays the main presenter. Depending on the supported protocol version, it
+ * displays for example buttons to start and stop a presentation or to switch to the next or
+ * previous slide.
  */
 public class Presenter extends Fragment {
     /**
@@ -41,6 +53,11 @@ public class Presenter extends Fragment {
     private Settings mSettings;
     private AudioManager mAudioManager;
     private int mPreviousAudioRingerMode;
+
+    /**
+     * The protocol version supported by this fragment.
+     */
+    private ProtocolVersion mActiveProtocolVersion;
 
     /**
      * Some older devices needs a small delay between UI widget updates
@@ -79,53 +96,60 @@ public class Presenter extends Fragment {
          * Called if the server should switch to the next slide.
          */
         void onNextSlide();
+
+        /**
+         * Called if the server should start the presentation.
+         */
+        void onStartPresentation();
+
+        /**
+         * Called if the server should stop the presentation.
+         */
+        void onStopPresentation();
     }
 
     /**
-     * The listener for presenter events.
+     * Creates a new instance of presenter class. The displayed control elements depend on the given
+     * protocol version.
+     *
+     * @param supportedProtocolVersion The protocol version that needs to be supported by this
+     *                                 presenter fragment
+     * @return The presenter fragment instance
      */
-    private PresenterListener mListener;
+    public static Presenter newInstance(@NonNull ProtocolVersion supportedProtocolVersion) {
+        Presenter presenter = new Presenter();
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("minVersion", supportedProtocolVersion.getMinVersion());
+        bundle.putSerializable("maxVersion", supportedProtocolVersion.getMaxVersion());
+        presenter.setArguments(bundle);
+
+        return presenter;
+    }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_presenter, container, false);
-    }
+        if (getArguments() != null) {
+            int minVersion = getArguments().getInt("minVersion");
+            int maxVersion = getArguments().getInt("maxVersion");
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-        try {
-            mListener = (PresenterListener) context;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement PresenterListener");
+            mActiveProtocolVersion = new ProtocolVersion(minVersion, maxVersion);
         }
-    }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
+        return inflater.inflate(R.layout.fragment_presenter, container, false);
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        Button nextSlideButton = (Button) getActivity().findViewById(R.id.next_slide);
-        nextSlideButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                mListener.onNextSlide();
-            }
-        });
-
-        Button prevSlideButton = (Button) getActivity().findViewById(R.id.prev_slide);
-        prevSlideButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                mListener.onPrevSlide();
-            }
-        });
+        // The pager widget, which handles animation and allows swiping horizontally to access
+        // previous and next wizard steps.
+        ViewPager mPager = (ViewPager) this.getActivity().findViewById(R.id.presenter);
+        // The pager adapter, which provides the pages to the view pager widget.
+        PagerAdapter mPagerAdapter = new ScreenSlidePagerAdapter(
+                getActivity().getFragmentManager(), mActiveProtocolVersion);
+        mPager.setAdapter(mPagerAdapter);
 
         // Hide the system ui with a short delay
         mContentView = getActivity().findViewById(R.id.presenter);
@@ -150,6 +174,162 @@ public class Presenter extends Fragment {
 
         if (mSettings.silenceDuringPresentation()) {
             mAudioManager.setRingerMode(mPreviousAudioRingerMode);
+        }
+    }
+
+    /**
+     * This slider pager adapter contains the different pages containing the buttons of the
+     * presenter fragment.
+     */
+    private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
+        final List<Fragment> activeFragmentList;
+
+        ScreenSlidePagerAdapter(FragmentManager fragmentManager,
+                                ProtocolVersion activeProtocolVersion) {
+            super(fragmentManager);
+
+            activeFragmentList = new ArrayList<>();
+
+            if ((activeProtocolVersion.getMaxVersion() >= Command.NEXT_SLIDE.getMinVersion() &&
+                    activeProtocolVersion.getMinVersion() <= Command.NEXT_SLIDE.getMaxVersion()) &&
+                    activeProtocolVersion.getMaxVersion() >= Command.PREV_SLIDE.getMinVersion() &&
+                    activeProtocolVersion.getMinVersion() <= Command.PREV_SLIDE.getMaxVersion()) {
+                activeFragmentList.add(
+                        PresenterPage.newInstance(R.layout.fragment_presenter_nextprev));
+            }
+
+            if (activeProtocolVersion.getMaxVersion()
+                    >= Command.START_PRESENTATION.getMinVersion() &&
+                    activeProtocolVersion.getMinVersion()
+                            <= Command.START_PRESENTATION.getMaxVersion() &&
+                    activeProtocolVersion.getMaxVersion()
+                            >= Command.STOP_PRESENTATION.getMinVersion() &&
+                    activeProtocolVersion.getMinVersion()
+                            <= Command.STOP_PRESENTATION.getMaxVersion()) {
+                activeFragmentList.add(
+                        PresenterPage.newInstance(R.layout.fragment_presenter_startstop));
+            }
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return activeFragmentList.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return activeFragmentList.size();
+        }
+    }
+
+    /**
+     * A single page containing the presenter buttons.
+     */
+    public static class PresenterPage extends Fragment {
+        /**
+         * The listener for presenter events.
+         */
+        private PresenterListener mListener;
+
+        /**
+         * Key to insert the layout id into the mapping of a Bundle.
+         */
+        private static final String LAYOUT_ID = "layoutId";
+
+        /**
+         * The id of the layout contained by this page.
+         */
+        private int mLayoutId;
+
+        /**
+         * Creates a new page for a given layout.
+         *
+         * @param layoutId The resource id of the layout to add
+         * @return A new page instance
+         */
+        static PresenterPage newInstance(int layoutId) {
+            PresenterPage fragment = new PresenterPage();
+
+            Bundle bundle = new Bundle();
+            bundle.putInt(LAYOUT_ID, layoutId);
+            fragment.setArguments(bundle);
+            fragment.setRetainInstance(true);
+
+            return fragment;
+        }
+
+        @Override
+        public void onAttach(Context context) {
+            super.onAttach(context);
+
+            try {
+                mListener = (PresenterListener) context;
+            } catch (ClassCastException e) {
+                throw new ClassCastException(context.toString()
+                        + " must implement PresenterListener");
+            }
+        }
+
+        @Override
+        public void onDetach() {
+            super.onDetach();
+            mListener = null;
+        }
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+
+            if (this.getArguments() != null) {
+                this.mLayoutId = this.getArguments().getInt(LAYOUT_ID);
+            }
+        }
+
+        @Override
+        public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            return inflater.inflate(mLayoutId, container, false);
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+
+            Button nextSlideButton = (Button) getActivity().findViewById(R.id.next_slide);
+            if (nextSlideButton != null) {
+                nextSlideButton.setOnClickListener(new View.OnClickListener() {
+                    public void onClick(View view) {
+                        mListener.onNextSlide();
+                    }
+                });
+            }
+
+            Button prevSlideButton = (Button) getActivity().findViewById(R.id.prev_slide);
+            if (prevSlideButton != null) {
+                prevSlideButton.setOnClickListener(new View.OnClickListener() {
+                    public void onClick(View view) {
+                        mListener.onPrevSlide();
+                    }
+                });
+            }
+
+            Button startButton = (Button) getActivity().findViewById(R.id.start_presentation);
+            if (startButton != null) {
+                startButton.setOnClickListener(new View.OnClickListener() {
+                    public void onClick(View view) {
+                        mListener.onStartPresentation();
+                    }
+                });
+            }
+
+            Button stopButton = (Button) getActivity().findViewById(R.id.stop_presentation);
+            if (stopButton != null) {
+                stopButton.setOnClickListener(new View.OnClickListener() {
+                    public void onClick(View view) {
+                        mListener.onStopPresentation();
+                    }
+                });
+            }
         }
     }
 }
