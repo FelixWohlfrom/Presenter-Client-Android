@@ -67,9 +67,21 @@
         android:layout_row="5"
         android:text="@string/howto" />
 
+    <TextView
+        android:id="@+id/protocol_version"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_column="0"
+        android:layout_gravity="center"
+        android:layout_row="6"
+        android:textAlignment="center"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:paddingTop="20dp" />
+
     <Space
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_column="0"
-        android:layout_row="6"/>
+        android:layout_row="7"/>
 </GridLayout>
