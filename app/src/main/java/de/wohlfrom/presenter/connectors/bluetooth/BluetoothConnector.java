@@ -84,7 +84,7 @@ public class BluetoothConnector extends Activity
     /**
      * The BroadcastReceiver that listens for bluetooth broadcasts
      */
-    BroadcastReceiver mReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -166,30 +166,38 @@ public class BluetoothConnector extends Activity
                 mPresenterControl.start();
             }
 
-            if (mPresenterControl.getState() == RemoteControl.ServiceState.CONNECTED) {
-                // show presenter fragment
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
-                Fragment fragment = new Presenter();
-                transaction.replace(R.id.connector_content, fragment);
-                transaction.addToBackStack(null);
-                transaction.commit();
+            switch (mPresenterControl.getState()) {
+                case CONNECTED: {
+                    // show presenter fragment
+                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                    Fragment fragment = Presenter.newInstance(
+                            mPresenterControl.getActiveProtocolVersion());
+                    transaction.replace(R.id.connector_content, fragment);
+                    transaction.addToBackStack(null);
+                    transaction.commit();
 
-                mPresenterVisible = true;
-            } else if (mPresenterControl.getState() == RemoteControl.ServiceState.CONNECTING) {
-                // show "connecting" fragment
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
-                Fragment fragment = new Connecting();
-                transaction.replace(R.id.connector_content, fragment);
-                transaction.addToBackStack(null);
-                transaction.commit();
+                    mPresenterVisible = true;
+                    break;
+                }
+                case CONNECTING: {
+                    // show "connecting" fragment
+                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                    Fragment fragment = new Connecting();
+                    transaction.replace(R.id.connector_content, fragment);
+                    transaction.addToBackStack(null);
+                    transaction.commit();
 
-            } else {
-                // show device selector
-                setTitle(R.string.title_device_selector);
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
-                Fragment fragment = new DeviceSelector();
-                transaction.replace(R.id.connector_content, fragment);
-                transaction.commit();
+                    break;
+                }
+                default: {
+                    // show device selector
+                    setTitle(R.string.title_device_selector);
+                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                    Fragment fragment = new DeviceSelector();
+                    transaction.replace(R.id.connector_content, fragment);
+                    transaction.commit();
+                    break;
+                }
             }
         }
     }

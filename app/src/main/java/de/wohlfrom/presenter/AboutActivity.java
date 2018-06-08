@@ -38,9 +38,9 @@ public class AboutActivity extends Activity {
         ((TextView)findViewById(R.id.appVersionView)).setText(
                 getString(R.string.version, BuildConfig.VERSION_NAME));
 
-        ((TextView)findViewById(R.id.authorView)).setText(getString(R.string.copyright));
 
-        // Make links in to license clickable
+        // Make links clickable
         ((TextView)findViewById(R.id.license)).setMovementMethod(LinkMovementMethod.getInstance());
+        ((TextView)findViewById(R.id.howto)).setMovementMethod(LinkMovementMethod.getInstance());
     }
 }

@@ -5,7 +5,7 @@ if [ "x`adb devices`" = "x" ]; then
     exit 1
 fi
 
-# ensure that adb daemon is properly startet
+# ensure that adb daemon is properly started
 # otherwise it will show some "adb daemon is starting"
 adb devices
 

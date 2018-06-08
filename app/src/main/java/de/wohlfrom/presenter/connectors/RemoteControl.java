@@ -91,7 +91,7 @@ public abstract class RemoteControl {
      * The possible result values of the "connection" result sent to the handler.
      * Result will always contain a success state. If success is true, also a name is given.
      */
-    public final static String[] RESULT_VALUES = { "success", "name", "error" };
+    public final static String[] RESULT_VALUES = {"success", "name", "error"};
 
     /**
      * The protocol version supported by our android client.
@@ -149,7 +149,7 @@ public abstract class RemoteControl {
     /**
      * Parses a given message. The message needs to be a json string.
      *
-     * @param sender The message sender.
+     * @param sender  The message sender.
      * @param message The message to parse.
      */
     public void handleMessage(String sender, String message) {

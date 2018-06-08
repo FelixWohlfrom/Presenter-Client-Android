@@ -21,6 +21,7 @@ package de.wohlfrom.presenter.connectors.bluetooth;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.os.ParcelUuid;
+import android.support.annotation.NonNull;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -77,7 +78,7 @@ public class ShadowBluetoothSocket implements Closeable {
         }
 
         @Override
-        public int read(byte[] b) throws IOException {
+        public int read(@NonNull byte[] b) throws IOException {
             if (failReading) {
                 throw new IOException("Reading error");
             } else {
