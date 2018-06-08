@@ -35,7 +35,6 @@ import org.robolectric.shadows.ShadowLooper;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import de.wohlfrom.presenter.BuildConfig;
 import de.wohlfrom.presenter.connectors.Command;
 import de.wohlfrom.presenter.connectors.ProtocolVersion;
 import de.wohlfrom.presenter.connectors.RemoteControl;
@@ -51,8 +50,7 @@ import static org.robolectric.Shadows.shadowOf;
  * It checks connecting, disconnecting and failure handling.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class,
-        manifest = Config.NONE,
+@Config(manifest = Config.NONE,
         shadows = {ShadowBluetoothAdapter.class, ShadowBluetoothDevice.class,
                 ShadowBluetoothSocket.class})
 public class BluetoothPresenterControlTest {
@@ -74,7 +72,7 @@ public class BluetoothPresenterControlTest {
     /** The time in ms in which the service state should be checked for changes */
     private static final int SERVICE_STATE_CHECK_TIME = 100;
     /** The time in ms that we want to wait maximum for a message to be received. */
-    private static final int MESSAGE_RECEIVING_TIMEOUT = 30000;
+    private static final int MESSAGE_RECEIVING_TIMEOUT = 60000;
     /** The time in ms in which the message reception should be checked */
     private static final int MESSAGE_CHECK_TIME = 100;
 
