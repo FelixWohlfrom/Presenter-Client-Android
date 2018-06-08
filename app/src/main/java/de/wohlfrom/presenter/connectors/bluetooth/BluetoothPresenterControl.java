@@ -235,7 +235,7 @@ class BluetoothPresenterControl extends RemoteControl {
             mmSocket = tmp;
             mState = ServiceState.CONNECTING;
 
-            // Notifiy the user that we are now connecting
+            // Notify the user that we are now connecting
             android.os.Message userNotification
                     = mHandler.obtainMessage(ServiceState.CONNECTING.ordinal());
             mHandler.sendMessage(userNotification);

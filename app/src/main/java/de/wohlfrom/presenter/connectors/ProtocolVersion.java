@@ -7,12 +7,12 @@ public class ProtocolVersion {
     /**
      * The minimum protocol version that is supported.
      */
-    private int minVersion = -1;
+    private final int minVersion;
 
     /**
      * The maximum protocol version that is supported.
      */
-    private int maxVersion = -1;
+    private final int maxVersion;
 
     /**
      * Creates a new protocol version object.

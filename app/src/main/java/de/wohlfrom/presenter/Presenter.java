@@ -135,7 +135,7 @@ public class Presenter extends Fragment {
 
         // Silence audio during presentation. Store old audio state to reset it afterwards.
         if (mSettings.silenceDuringPresentation()) {
-            mAudioManager = (AudioManager)getActivity().getSystemService(AUDIO_SERVICE);
+            mAudioManager = (AudioManager) getActivity().getSystemService(AUDIO_SERVICE);
             if (mAudioManager != null) {
                 mPreviousAudioRingerMode = mAudioManager.getRingerMode();
 
