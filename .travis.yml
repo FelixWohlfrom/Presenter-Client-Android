@@ -37,4 +37,9 @@ script:
   - ./gradlew build assembleAndroidTest test
   - ./android-wait-for-emulator.sh
   - adb shell input keyevent 82 &
-  - ./gradlew connectedAndroidTest
+  # This will check that local tests where executed and execute
+  # instrumentation tests with coverage report
+  - ./gradlew jacocoTestReport
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
