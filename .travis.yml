@@ -28,13 +28,16 @@ before_install:
   - yes | sdkmanager "platforms;android-27"
 
 before_script:
-  # Create and start emulator
+  # Create emulator
   - echo no | android create avd --force -n test -t android-22
-  - emulator -avd test -no-audio -no-window &
 
 script:
   - set -e
+  # Run local tests, should be more stable if no emulator is running
   - ./gradlew build assembleAndroidTest test
+
+  # Fire up the emulator
+  - emulator -avd test -no-audio -no-window &
   - ./android-wait-for-emulator.sh
   - adb shell input keyevent 82 &
   # This will check that local tests where executed and execute
