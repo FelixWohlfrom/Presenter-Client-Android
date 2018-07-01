@@ -32,7 +32,6 @@ import static org.hamcrest.core.Is.is;
  * A simple test that verifies that our settings class can properly store and restore the settings.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
 public class SettingsTest {
     private Settings mSettings;
 
