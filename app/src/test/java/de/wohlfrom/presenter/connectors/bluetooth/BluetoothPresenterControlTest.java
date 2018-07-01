@@ -50,8 +50,7 @@ import static org.robolectric.Shadows.shadowOf;
  * It checks connecting, disconnecting and failure handling.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE,
-        shadows = {ShadowBluetoothAdapter.class, ShadowBluetoothDevice.class,
+@Config(shadows = {ShadowBluetoothAdapter.class, ShadowBluetoothDevice.class,
                 ShadowBluetoothSocket.class})
 public class BluetoothPresenterControlTest {
 
