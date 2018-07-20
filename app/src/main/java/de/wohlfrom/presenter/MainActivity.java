@@ -37,35 +37,22 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         findViewById(R.id.connect_via_bluetooth).setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(MainActivity.this,
-                                BluetoothConnector.class);
-                        startActivity(intent);
-                    }
+                view -> {
+                    Intent intent = new Intent(MainActivity.this, BluetoothConnector.class);
+                    startActivity(intent);
                 });
 
         findViewById(R.id.settings).setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(MainActivity.this,
-                                SettingsActivity.class);
-                        startActivity(intent);
-                    }
+                view -> {
+                    Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                    startActivity(intent);
                 });
 
-        ((Button)findViewById(R.id.about)).setText(
-                getString(R.string.about, getString(R.string.app_name)));
+        ((Button) findViewById(R.id.about)).setText(getString(R.string.about, getString(R.string.app_name)));
         findViewById(R.id.about).setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(MainActivity.this,
-                                AboutActivity.class);
-                        startActivity(intent);
-                    }
+                view -> {
+                    Intent intent = new Intent(MainActivity.this, AboutActivity.class);
+                    startActivity(intent);
                 });
     }
 }

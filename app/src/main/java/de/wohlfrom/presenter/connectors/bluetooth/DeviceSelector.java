@@ -120,17 +120,15 @@ public class DeviceSelector extends Fragment {
         super.onResume();
 
         // Initialize the button to perform device discovery
-        Button scanButton = (Button) getActivity().findViewById(R.id.button_scan);
-        scanButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                doDiscovery();
-                // Start scanning animations, remove button
-                mNewDevicesArrayAdapter.clear();
-                getActivity().findViewById(R.id.title_new_devices).setVisibility(View.VISIBLE);
-                getActivity().findViewById(R.id.device_scanning_active).setVisibility(View.VISIBLE);
-                getActivity().findViewById(R.id.new_devices).setVisibility(View.GONE);
-                view.setVisibility(View.GONE);
-            }
+        Button scanButton = getActivity().findViewById(R.id.button_scan);
+        scanButton.setOnClickListener(view -> {
+            doDiscovery();
+            // Start scanning animations, remove button
+            mNewDevicesArrayAdapter.clear();
+            getActivity().findViewById(R.id.title_new_devices).setVisibility(View.VISIBLE);
+            getActivity().findViewById(R.id.device_scanning_active).setVisibility(View.VISIBLE);
+            getActivity().findViewById(R.id.new_devices).setVisibility(View.GONE);
+            view.setVisibility(View.GONE);
         });
 
         // Initialize array adapters. One for already paired devices and
@@ -140,11 +138,11 @@ public class DeviceSelector extends Fragment {
         mNewDevicesArrayAdapter = new ArrayAdapter<>(getActivity(), R.layout.device_name);
 
         // Find and set up the ListView for paired devices
-        ListView pairedListView = (ListView) getActivity().findViewById(R.id.paired_devices);
+        ListView pairedListView = getActivity().findViewById(R.id.paired_devices);
         pairedListView.setAdapter(pairedDevicesArrayAdapter);
 
         // Find and set up the ListView for newly discovered devices
-        ListView newDevicesListView = (ListView) getActivity().findViewById(R.id.new_devices);
+        ListView newDevicesListView = getActivity().findViewById(R.id.new_devices);
         newDevicesListView.setAdapter(mNewDevicesArrayAdapter);
 
         // Register for broadcasts when a device is discovered
@@ -239,7 +237,7 @@ public class DeviceSelector extends Fragment {
                 }
 
                 ListView newDevicesListView =
-                        (ListView) getActivity().findViewById(R.id.new_devices);
+                        getActivity().findViewById(R.id.new_devices);
                 newDevicesListView.setOnItemClickListener(mDeviceClickListener);
 
                 // When discovery is finished, show it in new device array
