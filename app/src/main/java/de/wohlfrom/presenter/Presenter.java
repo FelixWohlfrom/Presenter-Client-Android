@@ -145,7 +145,7 @@ public class Presenter extends Fragment {
 
         // The pager widget, which handles animation and allows swiping horizontally to access
         // previous and next wizard steps.
-        ViewPager mPager = (ViewPager) this.getActivity().findViewById(R.id.presenter);
+        ViewPager mPager = this.getActivity().findViewById(R.id.presenter);
         // The pager adapter, which provides the pages to the view pager widget.
         PagerAdapter mPagerAdapter = new ScreenSlidePagerAdapter(
                 getActivity().getFragmentManager(), mActiveProtocolVersion);
@@ -295,7 +295,7 @@ public class Presenter extends Fragment {
         public void onResume() {
             super.onResume();
 
-            Button nextSlideButton = (Button) getActivity().findViewById(R.id.next_slide);
+            Button nextSlideButton = getActivity().findViewById(R.id.next_slide);
             if (nextSlideButton != null) {
                 nextSlideButton.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View view) {
@@ -304,7 +304,7 @@ public class Presenter extends Fragment {
                 });
             }
 
-            Button prevSlideButton = (Button) getActivity().findViewById(R.id.prev_slide);
+            Button prevSlideButton = getActivity().findViewById(R.id.prev_slide);
             if (prevSlideButton != null) {
                 prevSlideButton.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View view) {
@@ -313,7 +313,7 @@ public class Presenter extends Fragment {
                 });
             }
 
-            Button startButton = (Button) getActivity().findViewById(R.id.start_presentation);
+            Button startButton = getActivity().findViewById(R.id.start_presentation);
             if (startButton != null) {
                 startButton.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View view) {
@@ -322,7 +322,7 @@ public class Presenter extends Fragment {
                 });
             }
 
-            Button stopButton = (Button) getActivity().findViewById(R.id.stop_presentation);
+            Button stopButton = getActivity().findViewById(R.id.stop_presentation);
             if (stopButton != null) {
                 stopButton.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View view) {
