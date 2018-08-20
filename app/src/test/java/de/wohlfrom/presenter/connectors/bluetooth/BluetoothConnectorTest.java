@@ -1,8 +1,6 @@
 package de.wohlfrom.presenter.connectors.bluetooth;
 
-import android.app.Notification;
 import android.bluetooth.BluetoothAdapter;
-import android.content.Intent;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

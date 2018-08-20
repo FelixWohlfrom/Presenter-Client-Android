@@ -107,7 +107,7 @@ public class ShadowBluetoothSocket implements Closeable {
 
     @Implementation
     protected void __constructor__(int type, int fd, boolean auth, boolean encrypt,
-                        BluetoothDevice device, int port, ParcelUuid uuid) throws IOException {
+                        BluetoothDevice device, int port, ParcelUuid uuid) {
         // Empty dummy
     }
 
@@ -119,17 +119,17 @@ public class ShadowBluetoothSocket implements Closeable {
     }
 
     @Implementation
-    protected InputStream getInputStream() throws IOException {
+    protected InputStream getInputStream() {
         return receivedStringWriter;
     }
 
     @Implementation
-    protected OutputStream getOutputStream() throws IOException {
+    protected OutputStream getOutputStream() {
         return transmittedStringWriter;
     }
 
     @Implementation
-    public void close() throws IOException {
+    public void close() {
         // Do nothing
     }
 

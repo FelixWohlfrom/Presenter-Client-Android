@@ -133,6 +133,7 @@ public class DeviceSelectorTest {
      */
     @Test
     public void clickOnSearch() {
+        ShadowBluetoothAdapter.getDefaultAdapter().startDiscovery();
         activityController.create().resume();
 
         View view = deviceSelector.getView();
