@@ -3,6 +3,7 @@ package de.wohlfrom.presenter.connectors.bluetooth;
 import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.os.Build;
 import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -31,7 +32,11 @@ import static org.robolectric.util.FragmentTestUtil.startFragment;
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = "src/main/AndroidManifest.xml",
-        shadows = {ShadowBluetoothAdapter.class})
+        shadows = {ShadowBluetoothAdapter.class},
+        sdk = {
+            Build.VERSION_CODES.LOLLIPOP_MR1,
+            Build.VERSION_CODES.M
+        })
 public class DeviceSelectorTest {
 
     private String BLUETOOTH_DEVICE_ID = "AA:BB:CC:DD:EE:FF";
