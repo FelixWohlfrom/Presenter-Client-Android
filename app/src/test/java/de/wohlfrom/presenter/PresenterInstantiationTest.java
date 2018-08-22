@@ -37,10 +37,10 @@ public class PresenterInstantiationTest {
     @ParameterizedRobolectricTestRunner.Parameters(name = "ProtocolVersion[{0}, {1}]")
     public static Collection<Object[]> data() {
         List<Pair<Integer, Integer>> result = new LinkedList<>();
-        for (int i = RemoteControl.CLIENT_PROTOCOL_VERSION.getMinVersion();
-             i <= RemoteControl.CLIENT_PROTOCOL_VERSION.getMaxVersion(); i++) {
-            for (int j = RemoteControl.CLIENT_PROTOCOL_VERSION.getMinVersion();
-                 j <= RemoteControl.CLIENT_PROTOCOL_VERSION.getMaxVersion(); j++) {
+        for (int i = RemoteControl.CLIENT_PROTOCOL_VERSION.getMinVersion() - 1;
+             i <= RemoteControl.CLIENT_PROTOCOL_VERSION.getMaxVersion() + 1; i++) {
+            for (int j = RemoteControl.CLIENT_PROTOCOL_VERSION.getMinVersion() - 1;
+                 j <= RemoteControl.CLIENT_PROTOCOL_VERSION.getMaxVersion() + 1; j++) {
                 result.add(new Pair<>(i, j));
             }
         }
