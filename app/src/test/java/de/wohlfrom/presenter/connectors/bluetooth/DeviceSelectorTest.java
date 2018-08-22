@@ -134,11 +134,27 @@ public class DeviceSelectorTest {
     }
 
     /**
-     * Verifies that the fragment can be destroyed. One device paired before.
+     * Verifies that searching for new devices can be triggered.
+     * Discovery already started.
      */
     @Test
-    public void clickOnSearch() {
+    public void clickOnSearchDiscoveryRunning() {
         ShadowBluetoothAdapter.getDefaultAdapter().startDiscovery();
+        activityController.create().resume();
+
+        View view = deviceSelector.getView();
+        view.findViewById(R.id.button_scan).performClick();
+
+        assertThat("Did not start device discovery",
+                ShadowBluetoothAdapter.getDefaultAdapter().isDiscovering(), is(true));
+    }
+
+    /**
+     * Verifies that searching for new devices can be triggered.
+     * Discovery not started.
+     */
+    @Test
+    public void clickOnSearchDiscoveryStopped() {
         activityController.create().resume();
 
         View view = deviceSelector.getView();
