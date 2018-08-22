@@ -88,6 +88,6 @@ public class PresenterInstantiationTest {
         ActivityController activityController = Robolectric.buildActivity(
                 PresenterTestDummyActivity.class);
         ((PresenterTestDummyActivity) activityController.get()).setFragment(presenter);
-        activityController.create().resume().start().stop().destroy();
+        activityController.create().start().resume().visible().stop().destroy();
     }
 }
