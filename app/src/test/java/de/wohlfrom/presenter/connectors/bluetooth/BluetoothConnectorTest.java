@@ -30,7 +30,7 @@ public class BluetoothConnectorTest {
     public void verifyLifecycleBluetoothEnabled() {
         shadowOf(BluetoothAdapter.getDefaultAdapter()).setEnabled(true);
         ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
-        activityController.create().resume().destroy();
+        activityController.create().resume().pause().destroy();
     }
 
     /**
