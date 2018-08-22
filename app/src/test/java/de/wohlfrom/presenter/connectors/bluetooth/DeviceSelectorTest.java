@@ -3,6 +3,7 @@ package de.wohlfrom.presenter.connectors.bluetooth;
 import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Intent;
 import android.os.Build;
 import android.view.View;
 import android.widget.ListAdapter;
@@ -13,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowBluetoothAdapter;
@@ -184,5 +186,43 @@ public class DeviceSelectorTest {
         assertThat("Received wrong value on device listener",
                 ((DummyActivity)activityController.get()).getSelectedDevice(),
                 is(BLUETOOTH_DEVICE_ID));
+    }
+
+    /**
+     * Check that adding a new device during bluetooth discovery works fine.
+     * Device list is empty before.
+     */
+    @Test
+    public void findNewDeviceEmptyList() {
+        activityController.create().resume().visible();
+
+        // First send out the intent for the new device
+        Intent intent = new Intent(BluetoothDevice.ACTION_FOUND);
+        intent.putExtra(BluetoothDevice.EXTRA_DEVICE,
+                ShadowBluetoothAdapter.getDefaultAdapter().getRemoteDevice(BLUETOOTH_DEVICE_ID));
+        RuntimeEnvironment.application.sendBroadcast(intent);
+
+        View view = deviceSelector.getView();
+        assertThat("Did not discover new device",
+                ((ListView) view.findViewById(R.id.new_devices)).getAdapter().getCount(), is(1));
+    }
+
+    /**
+     * Check that finishing discovery without finding any devices works fine.
+     */
+    @Test
+    public void finishDiscoveryNoDevices() {
+        activityController.create().resume().visible();
+
+        // Directly send out intent for discovery finished
+        Intent intent = new Intent(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        RuntimeEnvironment.application.sendBroadcast(intent);
+
+        View view = deviceSelector.getView();
+
+        assertThat("Found device although none was expected",
+                ((ListView) view.findViewById(R.id.new_devices)).getAdapter()
+                        .getItem(0).toString(),
+                is(view.getResources().getText(R.string.none_found)));
     }
 }
