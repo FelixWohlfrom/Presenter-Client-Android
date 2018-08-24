@@ -322,6 +322,7 @@ class BluetoothPresenterControl extends RemoteControl {
                 tmpOut = socket.getOutputStream();
             } catch (IOException e) {
                 Log.e(TAG, "temp sockets not created", e);
+                mState = ServiceState.NONE;
             }
 
             mInStream = tmpIn;
