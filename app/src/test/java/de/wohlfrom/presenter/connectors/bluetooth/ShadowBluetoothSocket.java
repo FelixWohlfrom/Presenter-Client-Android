@@ -52,6 +52,7 @@ public class ShadowBluetoothSocket implements Closeable {
      */
     private static Boolean connectionSucceed = null;
     private static Boolean failReading = null;
+    private static Boolean failClosing = null;
     private static byte[] stringToTransmit = null;
 
     /**
@@ -129,8 +130,10 @@ public class ShadowBluetoothSocket implements Closeable {
     }
 
     @Implementation
-    public void close() {
-        // Do nothing
+    public void close() throws IOException {
+        if (failClosing) {
+            throw new IOException("Closing failed");
+        }
     }
 
     /**
@@ -149,6 +152,17 @@ public class ShadowBluetoothSocket implements Closeable {
      */
     static void setFailReading(boolean failReading) {
         ShadowBluetoothSocket.failReading = failReading;
+    }
+
+    /**
+
+    /**
+     * Sets if getter for streams should fail.
+     *
+     * @param failStreamGetter If reading the streams should fail
+     */
+    static void setFailStreamGetter(boolean failStreamGetter) {
+        ShadowBluetoothSocket.failStreamGetter = failStreamGetter;
     }
 
     /**
