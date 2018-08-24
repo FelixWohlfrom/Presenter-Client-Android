@@ -115,10 +115,12 @@ class BluetoothPresenterControl extends RemoteControl {
      */
     private synchronized void connected(BluetoothSocket socket, BluetoothDevice device) {
         // Cancel the thread that completed the connection
-        if (mConnectThread != null) {
+        // No need to do this, since the thread is always guaranteed to be canceled once we reach
+        // this line
+        /*if (mConnectThread != null) {
             mConnectThread.cancel();
             mConnectThread = null;
-        }
+        }*/
 
         // Cancel any thread currently running a connection
         if (mConnectedThread != null) {
