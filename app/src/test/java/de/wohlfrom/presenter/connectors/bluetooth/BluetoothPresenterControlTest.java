@@ -41,6 +41,7 @@ import de.wohlfrom.presenter.connectors.RemoteControl;
 
 import static junit.framework.Assert.fail;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -86,6 +87,7 @@ public class BluetoothPresenterControlTest {
     public void initBluetoothSocket() {
         control = null;
 
+        ShadowBluetoothSocket.setFailClosing(false);
         ShadowBluetoothSocket.setFailReading(false);
         ShadowBluetoothSocket.setConnectionSucceed(true);
     }
@@ -137,6 +139,75 @@ public class BluetoothPresenterControlTest {
     }
 
     /**
+     * Verifies that the connection can be started again even if connection is currently
+     * tried to be established.
+     */
+    @Test
+    public void testStartAfterConnecting() throws InterruptedException {
+        control = new BluetoothPresenterControl(new Handler() {});
+        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
+                .getRemoteDevice(DEVICE_ADDRESS);
+        control.connect(bluetoothDevice);
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
+
+        ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
+        control.start();
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
+    }
+
+    /**
+     * Verifies that the connection can be started again even if connection was already
+     * established.
+     */
+    @Test
+    public void testStartAfterConnected() throws InterruptedException {
+        ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
+
+        control = new BluetoothPresenterControl(new Handler() {});
+        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
+                .getRemoteDevice(DEVICE_ADDRESS);
+        control.connect(bluetoothDevice);
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
+
+        control.start();
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
+    }
+
+    /**
+     * Verifies that the connection can be started a second time if still connecting.
+     */
+    @Test
+    public void testConnectTwiceConnecting() throws InterruptedException {
+        control = new BluetoothPresenterControl(new Handler() {});
+        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
+                .getRemoteDevice(DEVICE_ADDRESS);
+        control.connect(bluetoothDevice);
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
+
+        control.connect(bluetoothDevice);
+        ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
+    }
+
+    /**
+     * Verifies that the connection can be started a second time if already connected.
+     */
+    @Test
+    public void testConnectTwiceConnected() throws InterruptedException {
+        ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
+
+        control = new BluetoothPresenterControl(new Handler() {});
+        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
+                .getRemoteDevice(DEVICE_ADDRESS);
+        control.connect(bluetoothDevice);
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
+
+        control.connect(bluetoothDevice);
+        ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
+    }
+
+    /**
      * Test that if connection fails, we get the correct state of the service.
      */
     @Test
@@ -147,6 +218,40 @@ public class BluetoothPresenterControlTest {
                 .getRemoteDevice(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
+    }
+
+    /**
+     * Test that if connection fails and closing of socket fails,
+     * we get the correct state of the service.
+     */
+    @Test
+    public void testConnectedStateFailureSocketCloseFailure() throws InterruptedException {
+        ShadowBluetoothSocket.setConnectionSucceed(false);
+        ShadowBluetoothSocket.setFailClosing(true);
+        control = new BluetoothPresenterControl(new Handler() {});
+        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
+                .getRemoteDevice(DEVICE_ADDRESS);
+        control.connect(bluetoothDevice);
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
+    }
+
+    /**
+     * Verifies that the connection can be started again even if connection was already
+     * established and closing the socket fails
+     */
+    @Test
+    public void testStartAfterConnectedSocketCloseFailure() throws InterruptedException {
+        ShadowBluetoothSocket.setFailClosing(true);
+        ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
+
+        control = new BluetoothPresenterControl(new Handler() {});
+        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
+                .getRemoteDevice(DEVICE_ADDRESS);
+        control.connect(bluetoothDevice);
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
+
+        control.start();
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
     }
 
     /**
@@ -416,6 +521,20 @@ public class BluetoothPresenterControlTest {
         assertThat(ShadowBluetoothSocket.getLastTransmittedString(),
                 is("{ \"type\": \"command\", " +
                         "\"data\": \"" + Command.NEXT_SLIDE.getCommand() + "\"}\n\n"));
+    }
+
+    /**
+     * Test that writing data using the presenter control doesn't crash if connection
+     * was not established yet.
+     */
+    @Test
+    public void testWriteCommandDisconnected() {
+        ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
+
+        control = new BluetoothPresenterControl(new Handler() {});
+        ShadowBluetoothSocket.resetLastTransmittedString();
+        control.sendCommand(Command.NEXT_SLIDE);
+        assertThat(ShadowBluetoothSocket.getLastTransmittedString(), isEmptyString());
     }
 
     /**
