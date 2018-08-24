@@ -89,6 +89,7 @@ public class BluetoothPresenterControlTest {
 
         ShadowBluetoothSocket.setFailClosing(false);
         ShadowBluetoothSocket.setFailReading(false);
+        ShadowBluetoothSocket.setFailStreamGetter(false);
         ShadowBluetoothSocket.setConnectionSucceed(true);
     }
 
@@ -228,6 +229,19 @@ public class BluetoothPresenterControlTest {
     public void testConnectedStateFailureSocketCloseFailure() throws InterruptedException {
         ShadowBluetoothSocket.setConnectionSucceed(false);
         ShadowBluetoothSocket.setFailClosing(true);
+        control = new BluetoothPresenterControl(new Handler() {});
+        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
+                .getRemoteDevice(DEVICE_ADDRESS);
+        control.connect(bluetoothDevice);
+        waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
+    }
+
+    /**
+     * Test that if streams could not be read from socket, we get correct state of service.
+     */
+    @Test
+    public void testConnectedStreamReadFailure() throws InterruptedException {
+        ShadowBluetoothSocket.setFailStreamGetter(true);
         control = new BluetoothPresenterControl(new Handler() {});
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
