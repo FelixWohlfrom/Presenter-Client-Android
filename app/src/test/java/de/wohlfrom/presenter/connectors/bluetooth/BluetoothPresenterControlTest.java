@@ -427,8 +427,6 @@ public class BluetoothPresenterControlTest {
      */
     @Test
     public void testClientDisconnected() throws InterruptedException {
-        ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
-
         control = new BluetoothPresenterControl(new Handler() {});
         BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
                 .getRemoteDevice(DEVICE_ADDRESS);
