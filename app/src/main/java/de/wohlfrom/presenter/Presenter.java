@@ -148,7 +148,7 @@ public class Presenter extends Fragment {
         ViewPager mPager = this.getActivity().findViewById(R.id.presenter);
         // The pager adapter, which provides the pages to the view pager widget.
         PagerAdapter mPagerAdapter = new ScreenSlidePagerAdapter(
-                getActivity().getFragmentManager(), mActiveProtocolVersion);
+                this.getChildFragmentManager(), mActiveProtocolVersion);
         mPager.setAdapter(mPagerAdapter);
 
         // Hide the system ui with a short delay
