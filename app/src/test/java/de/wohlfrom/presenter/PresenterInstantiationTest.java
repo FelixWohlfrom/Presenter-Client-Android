@@ -1,6 +1,7 @@
 package de.wohlfrom.presenter;
 
 import android.app.Fragment;
+import android.os.Build;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,7 +28,10 @@ import static org.hamcrest.Matchers.notNullValue;
  * It will instantiate all possible combinations of supported protocol versions.
  */
 @RunWith(ParameterizedRobolectricTestRunner.class)
-@Config(manifest = "src/main/AndroidManifest.xml")
+@Config(manifest = "src/main/AndroidManifest.xml",
+        sdk = {
+            Build.VERSION_CODES.M
+        })
 public class PresenterInstantiationTest {
 
     /**
