@@ -1,0 +1,3 @@
+coverage:
+  # Some code cannot be tested, so we accept up to 90% coverage as green
+  range: "70...90"
