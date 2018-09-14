@@ -24,6 +24,7 @@ import java.util.HashSet;
 
 import de.wohlfrom.presenter.R;
 import de.wohlfrom.presenter.connectors.Command;
+import de.wohlfrom.presenter.connectors.ProtocolVersion;
 import de.wohlfrom.presenter.connectors.RemoteControl;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -54,6 +55,10 @@ public class BluetoothConnectorTest {
     private static final String SERVER_VERSION_SUCCESS
             = "{ \"type\" = \"version\"," +
             " \"data\" = '" + RemoteControl.CLIENT_PROTOCOL_VERSION + "' }\n\n";
+    private static final String SERVER_VERSION_FAILURE
+            = "{ \"type\" = \"version\"," +
+            " \"data\" = '" + new ProtocolVersion(-1, -1).toString() + "' }\n\n";
+    private static final String SERVER_INVALID_STRING = "Foo, Bar\n\n";
 
     /**
      * This request code is used to verify that the activity result is really our request to
@@ -250,6 +255,101 @@ public class BluetoothConnectorTest {
             activityController.stop().resume().visible();
             assertThat("Did not find 'next slide' button after restart",
                     connector.findViewById(R.id.next_slide), is(notNullValue()));
+        } finally {
+            activityController.stop().destroy();
+        }
+    }
+
+    /**
+     * Ensures that the bluetooth selector is shown if connection fails if the server has an
+     * incompatible version.
+     *
+     * @throws InterruptedException If waiting for the events to run through the pipes fails
+     */
+    @Test
+    public void connectionFailedInvalidVersion() throws InterruptedException {
+        initBondedDevice();
+
+        ShadowBluetoothSocket.setTransmittedString(SERVER_INVALID_STRING);
+
+        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
+        BluetoothConnector connector =
+                (BluetoothConnector) activityController.create().resume().visible().get();
+
+        try {
+            ((ListView) connector.findViewById(R.id.paired_devices)).performItemClick(
+                    ((ListView) connector.findViewById(R.id.paired_devices)).getChildAt(0), 0, 0);
+
+            Thread.sleep(100);
+            ShadowLooper.runUiThreadTasks();
+
+            assertThat("Did not switch back to bluetooth device selection",
+                    connector.findViewById(R.id.button_scan), is(notNullValue()));
+        } finally {
+            activityController.stop().destroy();
+        }
+    }
+
+    /**
+     * Ensures that the bluetooth selector is shown if connection fails if the server sends an
+     * invalid command.
+     *
+     * @throws InterruptedException If waiting for the events to run through the pipes fails
+     */
+    @Test
+    public void connectionFailedParsingError() throws InterruptedException {
+        initBondedDevice();
+
+        ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_FAILURE);
+
+        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
+        BluetoothConnector connector =
+                (BluetoothConnector) activityController.create().resume().visible().get();
+
+        try {
+            ((ListView) connector.findViewById(R.id.paired_devices)).performItemClick(
+                    ((ListView) connector.findViewById(R.id.paired_devices)).getChildAt(0), 0, 0);
+
+            Thread.sleep(100);
+            ShadowLooper.runUiThreadTasks();
+
+            assertThat("Did not switch back to bluetooth device selection",
+                    connector.findViewById(R.id.button_scan), is(notNullValue()));
+        } finally {
+            activityController.stop().destroy();
+        }
+    }
+
+    /**
+     * Ensures that the bluetooth selector is shown if server disconnects from our bluetooth
+     * connector.
+     *
+     * @throws InterruptedException If waiting for the events to run through the pipes fails
+     */
+    @Test
+    public void connectionLost() throws InterruptedException {
+        initBondedDevice();
+
+        ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
+
+        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
+        BluetoothConnector connector =
+                (BluetoothConnector) activityController.create().resume().visible().get();
+
+        try {
+            ((ListView) connector.findViewById(R.id.paired_devices)).performItemClick(
+                    ((ListView) connector.findViewById(R.id.paired_devices)).getChildAt(0), 0, 0);
+
+            Thread.sleep(100);
+            ShadowLooper.runUiThreadTasks();
+
+            ShadowBluetoothSocket.setFailReading(true);
+
+            Thread.sleep(100);
+            ShadowLooper.runUiThreadTasks();
+
+            assertThat("Did not switch back to bluetooth device selection",
+                    connector.findViewById(R.id.button_scan), is(notNullValue()));
         } finally {
             activityController.stop().destroy();
         }
