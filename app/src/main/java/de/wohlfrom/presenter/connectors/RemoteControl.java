@@ -205,7 +205,6 @@ public abstract class RemoteControl {
                     android.os.Message userNotification
                             = mHandler.obtainMessage(ServiceState.CONNECTED.ordinal());
                     Bundle bundle = new Bundle();
-                    bundle.putBoolean(RESULT_VALUES[0], true);
                     bundle.putString(RESULT_VALUES[1], sender);
                     userNotification.setData(bundle);
                     mHandler.sendMessage(userNotification);
