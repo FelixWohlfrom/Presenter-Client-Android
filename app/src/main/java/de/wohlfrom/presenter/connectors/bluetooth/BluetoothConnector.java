@@ -210,35 +210,28 @@ public class BluetoothConnector extends Activity
         @Override
         public void handleMessage(Message msg) {
             if (msg.what == RemoteControl.ServiceState.CONNECTED.ordinal()) {
-                if (msg.getData().getBoolean(RemoteControl.RESULT_VALUES[0])) {
-                    // If connection succeeded
-                    Toast.makeText(BluetoothConnector.this,
-                            BluetoothConnector.this.getString(R.string.bluetooth_connected,
-                                    msg.getData().getString(
-                                            BluetoothPresenterControl.RESULT_VALUES[1])),
-                            Toast.LENGTH_SHORT).show();
+                // If connection succeeded
+                Toast.makeText(BluetoothConnector.this,
+                        BluetoothConnector.this.getString(R.string.bluetooth_connected,
+                                msg.getData().getString(
+                                        BluetoothPresenterControl.RESULT_VALUES[1])),
+                        Toast.LENGTH_SHORT).show();
 
-                    // Remove "connecting" fragment
-                    if (getFragmentManager().getBackStackEntryCount() > 0) {
-                        getFragmentManager().popBackStack();
-                    }
-
-                    // show presenter fragment
-                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
-                    Fragment fragment = Presenter.newInstance(
-                            mPresenterControl.getActiveProtocolVersion());
-                    transaction.replace(R.id.connector_content, fragment);
-                    transaction.addToBackStack(null);
-                    transaction.commit();
-
-                    mPresenterVisible = true;
-                    return;
-
-                } else {
-                    Toast.makeText(BluetoothConnector.this,
-                            getString(R.string.bluetooth_not_connected),
-                            Toast.LENGTH_SHORT).show();
+                // Remove "connecting" fragment
+                if (getFragmentManager().getBackStackEntryCount() > 0) {
+                    getFragmentManager().popBackStack();
                 }
+
+                // show presenter fragment
+                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                Fragment fragment = Presenter.newInstance(
+                        mPresenterControl.getActiveProtocolVersion());
+                transaction.replace(R.id.connector_content, fragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+
+                mPresenterVisible = true;
+                return;
 
             } else if (msg.what == RemoteControl.ServiceState.CONNECTING.ordinal()) {
                 // show "connecting" fragment

@@ -298,9 +298,6 @@ public class BluetoothPresenterControlTest {
                 if (msg.what == RemoteControl.ServiceState.CONNECTING.ordinal()) {
                     connectingMessageReceived.countDown();
                 } else if (msg.what == RemoteControl.ServiceState.CONNECTED.ordinal()) {
-                    assertThat("Got wrong connection result",
-                            msg.getData().getBoolean(RemoteControl.RESULT_VALUES[0]),
-                            is(true));
                     assertThat("Got wrong device to which we are connected",
                             msg.getData().getString(RemoteControl.RESULT_VALUES[1]),
                             is(DEVICE_NAME));
