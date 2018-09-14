@@ -193,6 +193,8 @@ public class BluetoothConnectorTest {
 
     /**
      * Verifies that connection to a device works fine.
+     *
+     * @throws InterruptedException If waiting for the events to run through the pipes fails
      */
     @Test
     public void connectedToDevice() throws InterruptedException {
@@ -221,6 +223,8 @@ public class BluetoothConnectorTest {
     /**
      * Ensures that the connection to the remote device is still established after closing and
      * restoring the activity.
+     *
+     * @throws InterruptedException If waiting for the events to run through the pipes fails
      */
     @Test
     public void connectedToDeviceRestartActivity() throws InterruptedException {
