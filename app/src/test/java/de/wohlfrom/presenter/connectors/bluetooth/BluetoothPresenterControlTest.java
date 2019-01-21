@@ -299,7 +299,7 @@ public class BluetoothPresenterControlTest {
                     connectingMessageReceived.countDown();
                 } else if (msg.what == RemoteControl.ServiceState.CONNECTED.ordinal()) {
                     assertThat("Got wrong device to which we are connected",
-                            msg.getData().getString(RemoteControl.RESULT_VALUES[1]),
+                            msg.getData().getString(RemoteControl.RESULT_VALUES[0]),
                             is(DEVICE_NAME));
 
                     connectedMessageReceived.countDown();
@@ -332,7 +332,7 @@ public class BluetoothPresenterControlTest {
     public void testConnectedEventFailure() throws InterruptedException {
         ShadowBluetoothSocket.setConnectionSucceed(false);
         final CountDownLatch connectingMessageReceived = new CountDownLatch(1);
-        final CountDownLatch connectedMessageReceived = new CountDownLatch(1);
+        final CountDownLatch errorMessageReceived = new CountDownLatch(1);
 
         control = new BluetoothPresenterControl(new Handler() {
             @Override
@@ -340,12 +340,12 @@ public class BluetoothPresenterControlTest {
                 if (msg.what == RemoteControl.ServiceState.CONNECTING.ordinal()) {
                     connectingMessageReceived.countDown();
 
-                } else if (msg.what == RemoteControl.ServiceState.CONNECTED.ordinal()) {
-                    assertThat("Got wrong connection result",
-                            msg.getData().getBoolean(RemoteControl.RESULT_VALUES[0]),
-                            is(false));
+                } else if (msg.what == RemoteControl.ServiceState.ERROR.ordinal()) {
+                    assertThat("Got wrong error message",
+                            msg.getData().getInt(RemoteControl.RESULT_VALUES[1]),
+                            is(RemoteControl.ERROR_TYPES.NO_CONNECTION.ordinal()));
 
-                    connectedMessageReceived.countDown();
+                    errorMessageReceived.countDown();
                 }
             }
         });
@@ -359,8 +359,8 @@ public class BluetoothPresenterControlTest {
         assertThat("Did not receive 'connecting' event",
                 connectingMessageReceived.await(MESSAGE_RECEIVING_TIMEOUT, TimeUnit.MILLISECONDS),
                 is(true));
-        assertThat("Did not receive 'connected' event",
-                connectedMessageReceived.await(MESSAGE_RECEIVING_TIMEOUT, TimeUnit.MILLISECONDS),
+        assertThat("Did not receive 'error' event",
+                errorMessageReceived.await(MESSAGE_RECEIVING_TIMEOUT, TimeUnit.MILLISECONDS),
                 is(true));
     }
 
@@ -378,7 +378,7 @@ public class BluetoothPresenterControlTest {
             public void handleMessage(Message msg) {
                 if (msg.what == RemoteControl.ServiceState.ERROR.ordinal()) {
                     assertThat("Got wrong error type",
-                            msg.getData().getString(RemoteControl.RESULT_VALUES[2]),
+                            msg.getData().getString(RemoteControl.RESULT_VALUES[1]),
                             is(RemoteControl.ERROR_TYPES.VERSION.toString()));
 
                     messageReceived.countDown();
@@ -410,7 +410,7 @@ public class BluetoothPresenterControlTest {
             public void handleMessage(Message msg) {
                 if (msg.what == RemoteControl.ServiceState.ERROR.ordinal()) {
                     assertThat("Got wrong error type",
-                            msg.getData().getString(RemoteControl.RESULT_VALUES[2]),
+                            msg.getData().getString(RemoteControl.RESULT_VALUES[1]),
                             is(RemoteControl.ERROR_TYPES.PARSING.toString()));
 
                     messageReceived.countDown();

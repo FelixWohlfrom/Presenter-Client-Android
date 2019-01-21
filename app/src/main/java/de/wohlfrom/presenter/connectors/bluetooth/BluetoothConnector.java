@@ -214,7 +214,7 @@ public class BluetoothConnector extends Activity
                 Toast.makeText(BluetoothConnector.this,
                         BluetoothConnector.this.getString(R.string.bluetooth_connected,
                                 msg.getData().getString(
-                                        BluetoothPresenterControl.RESULT_VALUES[1])),
+                                        BluetoothPresenterControl.RESULT_VALUES[0])),
                         Toast.LENGTH_SHORT).show();
 
                 // Remove "connecting" fragment
@@ -246,11 +246,14 @@ public class BluetoothConnector extends Activity
 
             } else if (msg.what == RemoteControl.ServiceState.ERROR.ordinal()) {
                 RemoteControl.ERROR_TYPES error_type = RemoteControl.ERROR_TYPES.valueOf(
-                        msg.getData().getString(RemoteControl.RESULT_VALUES[2]));
+                        msg.getData().getString(RemoteControl.RESULT_VALUES[1]));
 
                 String errorMessage = "";
 
                 switch (error_type) {
+                    case NO_CONNECTION:
+                        errorMessage = getString(R.string.bluetooth_not_connected);
+                        break;
                     case VERSION:
                         errorMessage = getString(R.string.incompatible_server_version);
                         break;

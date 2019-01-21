@@ -40,6 +40,8 @@ public abstract class RemoteControl {
      * The possible types of errors that can be used to notify the user.
      */
     public enum ERROR_TYPES {
+        /* No connection to server possible */
+        NO_CONNECTION,
         /* Invalid version given */
         VERSION,
         /* Parsing error of the data sent by the server */
@@ -91,7 +93,7 @@ public abstract class RemoteControl {
      * The possible result values of the "connection" result sent to the handler.
      * Result will always contain a success state. If success is true, also a name is given.
      */
-    public final static String[] RESULT_VALUES = {"success", "name", "error"};
+    public final static String[] RESULT_VALUES = {"name", "error"};
 
     /**
      * The protocol version supported by our android client.
@@ -189,7 +191,7 @@ public abstract class RemoteControl {
                         android.os.Message userNotification
                                 = mHandler.obtainMessage(ServiceState.ERROR.ordinal());
                         Bundle bundle = new Bundle();
-                        bundle.putString(RESULT_VALUES[2], ERROR_TYPES.VERSION.toString());
+                        bundle.putString(RESULT_VALUES[1], ERROR_TYPES.VERSION.toString());
                         userNotification.setData(bundle);
                         mHandler.sendMessage(userNotification);
                         this.mState = ServiceState.NONE;
@@ -205,7 +207,7 @@ public abstract class RemoteControl {
                     android.os.Message userNotification
                             = mHandler.obtainMessage(ServiceState.CONNECTED.ordinal());
                     Bundle bundle = new Bundle();
-                    bundle.putString(RESULT_VALUES[1], sender);
+                    bundle.putString(RESULT_VALUES[0], sender);
                     userNotification.setData(bundle);
                     mHandler.sendMessage(userNotification);
 
@@ -217,7 +219,7 @@ public abstract class RemoteControl {
             android.os.Message userNotification
                     = mHandler.obtainMessage(ServiceState.ERROR.ordinal());
             Bundle bundle = new Bundle();
-            bundle.putString(RESULT_VALUES[2], ERROR_TYPES.PARSING.toString());
+            bundle.putString(RESULT_VALUES[1], ERROR_TYPES.PARSING.toString());
             userNotification.setData(bundle);
             mHandler.sendMessage(userNotification);
 
