@@ -123,7 +123,7 @@ public class ShadowBluetoothSocket implements Closeable {
     @Implementation
     protected InputStream getInputStream() throws IOException {
         if (failStreamGetter) {
-            throw new IOException("Faild to get input stream");
+            throw new IOException("Failed to get input stream");
         }
         return receivedStringWriter;
     }
@@ -131,7 +131,7 @@ public class ShadowBluetoothSocket implements Closeable {
     @Implementation
     protected OutputStream getOutputStream() throws IOException {
         if (failStreamGetter) {
-            throw new IOException("Faild to get output stream");
+            throw new IOException("Failed to get output stream");
         }
         return transmittedStringWriter;
     }

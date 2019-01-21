@@ -54,7 +54,7 @@ public class CommandTests {
     }
 
     /**
-     * Verify that the miniumum value is smaller than the maximum value
+     * Verify that the minimum value is smaller than the maximum value
      */
     @Test
     public void verifyMinIsSmallerThanMax() {

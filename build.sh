@@ -7,7 +7,7 @@ set -x
 ./gradlew build assembleAndroidTest test
 
 # Run emulator tests only on master. We just have a few, so this should be fine
-[ "$TRAVIS_BRANCH" != "master" ] && exit 0
+[[ "${TRAVIS_BRANCH}" != "master" ]] && exit 0
 
 # Fire up the emulator
 emulator -avd test -no-audio -no-window &

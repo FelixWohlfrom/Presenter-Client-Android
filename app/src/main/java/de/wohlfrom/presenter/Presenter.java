@@ -18,13 +18,13 @@
 
 package de.wohlfrom.presenter;
 
-import android.support.annotation.NonNull;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -297,38 +297,22 @@ public class Presenter extends Fragment {
 
             Button nextSlideButton = getActivity().findViewById(R.id.next_slide);
             if (nextSlideButton != null) {
-                nextSlideButton.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View view) {
-                        mListener.onNextSlide();
-                    }
-                });
+                nextSlideButton.setOnClickListener(view -> mListener.onNextSlide());
             }
 
             Button prevSlideButton = getActivity().findViewById(R.id.prev_slide);
             if (prevSlideButton != null) {
-                prevSlideButton.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View view) {
-                        mListener.onPrevSlide();
-                    }
-                });
+                prevSlideButton.setOnClickListener(view -> mListener.onPrevSlide());
             }
 
             Button startButton = getActivity().findViewById(R.id.start_presentation);
             if (startButton != null) {
-                startButton.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View view) {
-                        mListener.onStartPresentation();
-                    }
-                });
+                startButton.setOnClickListener(view -> mListener.onStartPresentation());
             }
 
             Button stopButton = getActivity().findViewById(R.id.stop_presentation);
             if (stopButton != null) {
-                stopButton.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View view) {
-                        mListener.onStopPresentation();
-                    }
-                });
+                stopButton.setOnClickListener(view -> mListener.onStopPresentation());
             }
         }
     }
