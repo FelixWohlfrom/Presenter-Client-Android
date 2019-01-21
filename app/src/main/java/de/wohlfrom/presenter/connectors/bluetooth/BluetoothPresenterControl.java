@@ -179,9 +179,9 @@ class BluetoothPresenterControl extends RemoteControl {
      */
     private void connectionFailed() {
         // Send a failure message back to the Activity
-        Message msg = mHandler.obtainMessage(ServiceState.CONNECTED.ordinal());
+        Message msg = mHandler.obtainMessage(ServiceState.ERROR.ordinal());
         Bundle bundle = new Bundle();
-        bundle.putBoolean(RESULT_VALUES[0], false);
+        bundle.putString(RESULT_VALUES[1], ERROR_TYPES.NO_CONNECTION.toString());
         msg.setData(bundle);
         mHandler.sendMessage(msg);
 
