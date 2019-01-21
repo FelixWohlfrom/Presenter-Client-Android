@@ -20,6 +20,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowBluetoothAdapter;
 
 import java.util.HashSet;
+import java.util.Objects;
 
 import de.wohlfrom.presenter.R;
 
@@ -41,7 +42,7 @@ import static org.robolectric.util.FragmentTestUtil.startFragment;
         })
 public class DeviceSelectorTest {
 
-    private String BLUETOOTH_DEVICE_ID = "AA:BB:CC:DD:EE:FF";
+    private final String BLUETOOTH_DEVICE_ID = "AA:BB:CC:DD:EE:FF";
 
     private DeviceSelector deviceSelector;
     private ActivityController activityController;
@@ -85,7 +86,7 @@ public class DeviceSelectorTest {
 
         View view = deviceSelector.getView();
         assertThat("Could not find paired devices",
-                view.findViewById(R.id.paired_devices), is(notNullValue()));
+                Objects.requireNonNull(view).findViewById(R.id.paired_devices), is(notNullValue()));
         assertThat("Found not exactly one entry",
                 ((ListView) view.findViewById(R.id.paired_devices)).getAdapter().getCount(), is(1));
         assertThat("Unexpected entry found",
@@ -104,8 +105,9 @@ public class DeviceSelectorTest {
         activityController.create().resume();
 
         View view = deviceSelector.getView();
-        String displayedDeviceId = ((ListView) view.findViewById(R.id.paired_devices)).getAdapter()
-                .getItem(0).toString();
+        String displayedDeviceId =
+                ((ListView) Objects.requireNonNull(view).findViewById(R.id.paired_devices))
+                        .getAdapter().getItem(0).toString();
         displayedDeviceId = displayedDeviceId.substring(displayedDeviceId.length() - 17);
         assertThat("Could not find paired devices",
                 view.findViewById(R.id.paired_devices), is(notNullValue()));
@@ -145,7 +147,7 @@ public class DeviceSelectorTest {
         activityController.create().resume();
 
         View view = deviceSelector.getView();
-        view.findViewById(R.id.button_scan).performClick();
+        Objects.requireNonNull(view).findViewById(R.id.button_scan).performClick();
 
         assertThat("Did not start device discovery",
                 ShadowBluetoothAdapter.getDefaultAdapter().isDiscovering(), is(true));
@@ -160,7 +162,7 @@ public class DeviceSelectorTest {
         activityController.create().resume();
 
         View view = deviceSelector.getView();
-        view.findViewById(R.id.button_scan).performClick();
+        Objects.requireNonNull(view).findViewById(R.id.button_scan).performClick();
 
         assertThat("Did not start device discovery",
                 ShadowBluetoothAdapter.getDefaultAdapter().isDiscovering(), is(true));
@@ -178,7 +180,7 @@ public class DeviceSelectorTest {
 
         View view = deviceSelector.getView();
 
-        ListView listView = view.findViewById(R.id.paired_devices);
+        ListView listView = Objects.requireNonNull(view).findViewById(R.id.paired_devices);
         ListAdapter adapter = listView.getAdapter();
         View itemView = adapter.getView(0, null, listView);
         listView.performItemClick(itemView, 0, adapter.getItemId(0));
@@ -204,7 +206,8 @@ public class DeviceSelectorTest {
 
         View view = deviceSelector.getView();
         assertThat("Did not discover new device",
-                ((ListView) view.findViewById(R.id.new_devices)).getAdapter().getCount(), is(1));
+                ((ListView) Objects.requireNonNull(view).findViewById(R.id.new_devices))
+                        .getAdapter().getCount(), is(1));
     }
 
     /**
@@ -221,8 +224,8 @@ public class DeviceSelectorTest {
         View view = deviceSelector.getView();
 
         assertThat("Found device although none was expected",
-                ((ListView) view.findViewById(R.id.new_devices)).getAdapter()
-                        .getItem(0).toString(),
+                ((ListView) Objects.requireNonNull(view).findViewById(R.id.new_devices))
+                        .getAdapter().getItem(0).toString(),
                 is(view.getResources().getText(R.string.none_found)));
     }
 }

@@ -58,8 +58,8 @@ public class PresenterInstantiationTest {
         return Arrays.asList(coll);
     }
     
-    private int minValue;
-    private int maxValue;
+    private final int minValue;
+    private final int maxValue;
 
     /**
      * Constructor, creates parametrized test.

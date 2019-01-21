@@ -12,13 +12,14 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
+import java.util.Objects;
+
 import de.wohlfrom.presenter.connectors.ProtocolVersion;
 import de.wohlfrom.presenter.connectors.RemoteControl;
 
 import static android.content.Context.AUDIO_SERVICE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -42,7 +43,7 @@ public class PresenterTest {
         activityController.create().resume().visible();
         
         assertThat("Did not find 'next slide' button",
-                presenter.getView().findViewById(R.id.next_slide),
+                Objects.requireNonNull(presenter.getView()).findViewById(R.id.next_slide),
                 is(notNullValue()));
 
         presenter.getView().findViewById(R.id.next_slide).performClick();
@@ -70,7 +71,7 @@ public class PresenterTest {
         activityController.create().resume().visible();
 
         assertThat("Did not find 'start presentation' button",
-                presenter.getView().findViewById(R.id.start_presentation),
+                Objects.requireNonNull(presenter.getView()).findViewById(R.id.start_presentation),
                 is(notNullValue()));
 
         presenter.getView().findViewById(R.id.start_presentation).performClick();
@@ -104,19 +105,19 @@ public class PresenterTest {
         Settings settings = new Settings(activity);
         settings.silenceDuringPresentation(true);
 
-        ((AudioManager) activity.getSystemService(AUDIO_SERVICE))
+        ((AudioManager) Objects.requireNonNull(activity.getSystemService(AUDIO_SERVICE)))
                 .setRingerMode(AudioManager.RINGER_MODE_NORMAL);
 
         activityController.create().resume().visible();
         
         assertThat("Did not silence the device", 
-                ((AudioManager) activity.getSystemService(AUDIO_SERVICE)).getRingerMode(),
+                ((AudioManager) Objects.requireNonNull(activity.getSystemService(AUDIO_SERVICE))).getRingerMode(),
                 is(AudioManager.RINGER_MODE_SILENT));
         
         activityController.stop();
 
         assertThat("Did not restore previous ringing mode",
-                ((AudioManager) activity.getSystemService(AUDIO_SERVICE)).getRingerMode(),
+                ((AudioManager) Objects.requireNonNull(activity.getSystemService(AUDIO_SERVICE))).getRingerMode(),
                 is(AudioManager.RINGER_MODE_NORMAL));
         
     }
