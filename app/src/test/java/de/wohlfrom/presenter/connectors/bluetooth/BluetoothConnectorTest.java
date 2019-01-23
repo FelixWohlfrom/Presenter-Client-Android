@@ -356,6 +356,38 @@ public class BluetoothConnectorTest {
     }
 
     /**
+     * Ensures that the bluetooth selector is shown if server disconnects from our bluetooth
+     * connector - even while we are currently connecting to the server.
+     *
+     * @throws InterruptedException If waiting for the events to run through the pipes fails
+     */
+    @Test
+    public void connectionLostConnecting() throws InterruptedException {
+        initBondedDevice();
+
+        ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
+        ShadowBluetoothSocket.setConnectionSucceed(false);
+
+        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
+
+        BluetoothConnector connector =
+                (BluetoothConnector) activityController.create().resume().visible().get();
+
+        try {
+            ((ListView) connector.findViewById(R.id.paired_devices)).performItemClick(
+                    ((ListView) connector.findViewById(R.id.paired_devices)).getChildAt(0), 0, 0);
+
+            Thread.sleep(100);
+            ShadowLooper.runUiThreadTasks();
+
+            assertThat("Did not switch back to bluetooth device selection",
+                    connector.findViewById(R.id.button_scan), is(notNullValue()));
+        } finally {
+            activityController.stop().destroy();
+        }
+    }
+
+    /**
      * Verifies that enabling bluetooth after requested by the presenter works fine and won't crash
      * the system.
      */
