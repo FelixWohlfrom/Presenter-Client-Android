@@ -18,13 +18,13 @@
 
 package de.wohlfrom.presenter;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.app.Activity;
-import android.view.View;
 import android.widget.Button;
 
 import de.wohlfrom.presenter.connectors.bluetooth.BluetoothConnector;
+import de.wohlfrom.presenter.connectors.wifi.WifiConnector;
 
 /**
  * The main activity that shows the main menu.
@@ -39,6 +39,12 @@ public class MainActivity extends Activity {
         findViewById(R.id.connect_via_bluetooth).setOnClickListener(
                 view -> {
                     Intent intent = new Intent(MainActivity.this, BluetoothConnector.class);
+                    startActivity(intent);
+                });
+
+        findViewById(R.id.connect_via_wifi).setOnClickListener(
+                view -> {
+                    Intent intent = new Intent(MainActivity.this, WifiConnector.class);
                     startActivity(intent);
                 });
 

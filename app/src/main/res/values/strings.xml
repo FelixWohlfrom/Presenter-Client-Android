@@ -34,6 +34,18 @@
     <string name="bluetooth_connected">Connected to: %s</string>
     <string name="bluetooth_not_connected">Bluetooth connection failed. Make sure that you started the server on your pc before you try to connect.</string>
 
+    <!-- Wifi presenting -->
+    <string name="wifi_not_available">Wifi is not available</string>
+    <string name="wifi_required_leaving">Wifi is required to allow remote control. Returning to main menu…</string>
+    <string name="title_broadcasting_devices">Remote presenter server</string>
+    <string name="manual_connection">Connect manually</string>
+    <string name="manual_config_presenter_name">Server Name (optional)</string>
+    <string name="manual_config_ip_address">IP Address</string>
+    <string name="manual_config_connect">Connect</string>
+    <string name="manual_config_no_ip">Please provide an ip address to connect to</string>
+    <string name="wifi_connected">Connected to: %s</string>
+    <string name="wifi_not_connected">Wifi connection failed. Make sure that you started the server on your pc before you try to connect.</string>
+
     <!-- About menu -->
     <string name="about">About %s</string>
     <string name="version">Version: %s</string>
@@ -42,5 +54,5 @@
     <string name="howto">You need a server software to properly use this app. Please check <a href="https://github.com/FelixWohlfrom/Presenter-Server">https://github.com/FelixWohlfrom/Presenter-Server</a> on how to download the server and execute it on your controlled system.</string>
     <string name="app_icon_description">App icon</string>
     <!-- Escape html tags to allow formatting and variables in the same string -->
-    <string name="protocol_version">Supported version of &lt;a href="https://github.com/FelixWohlfrom/Presenter-Protocol"&gt;presenter protocol&lt;/a&gt;:&lt;br /&gt;Minimum: %d&lt;br /&gt;Maximum: %d</string>
+    <string name="protocol_version">Supported version of &lt;a href="https://github.com/FelixWohlfrom/Presenter-Protocol"&gt;presenter protocol&lt;/a&gt;:&lt;br /&gt;Minimum: %1d&lt;br /&gt;Maximum: %2d</string>
 </resources>

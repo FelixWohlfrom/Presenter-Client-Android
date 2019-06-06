@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:context=".connectors.wifi.WifiManualInput">
+
+    <TextView
+        android:id="@+id/wifi_name_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/manual_config_presenter_name"
+        android:labelFor="@id/wifi_name"
+        />
+
+    <EditText
+        android:id="@+id/wifi_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/wifi_name_label"
+        android:inputType="textPersonName"
+        android:singleLine="true"
+        android:importantForAutofill="no"/>
+
+    <TextView
+        android:id="@+id/ip_address_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/wifi_name"
+        android:text="@string/manual_config_ip_address"
+        android:labelFor="@id/ip_address"
+        />
+
+    <EditText
+        android:id="@+id/ip_address"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ip_address_label"
+        android:inputType="textUri"
+        android:singleLine="true"
+        android:importantForAutofill="no"
+        />
+
+    <Button
+        android:id="@+id/connect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:text="@string/manual_config_connect"/>
+</RelativeLayout>
