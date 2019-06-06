@@ -15,6 +15,12 @@ import java.util.Locale;
 public abstract class RemoteControl {
 
     /**
+     * The id of our remote control service.
+     * To be used by child classes to identify our remote control service.
+     */
+    public static final String SERVICE_ID = "be71c255-8349-4d86-b09e-7983c035a191";
+
+    /**
      * Constants that indicate the current connection state
      */
     public enum ServiceState {
