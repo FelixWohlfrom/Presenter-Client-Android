@@ -35,7 +35,7 @@ class BroadcastServer extends TimerTask {
     static final String WIFI_DEVICE_NAME = "Testhost";
     static final String WIFI_IP_ADDRESS = "127.0.0.1";
     
-    private Timer broadcastTimer;
+    final private Timer broadcastTimer;
 
     /**
      * Will initialize the server sender thread.

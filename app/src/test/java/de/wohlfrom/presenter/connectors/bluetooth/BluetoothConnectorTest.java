@@ -23,6 +23,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Build;
+import android.view.KeyEvent;
 import android.widget.ListView;
 
 import org.junit.Before;
@@ -41,9 +42,11 @@ import org.robolectric.shadows.ShadowLooper;
 import java.util.HashSet;
 
 import de.wohlfrom.presenter.R;
+import de.wohlfrom.presenter.Settings;
 import de.wohlfrom.presenter.connectors.Command;
 import de.wohlfrom.presenter.connectors.ProtocolVersion;
 import de.wohlfrom.presenter.connectors.RemoteControl;
+import de.wohlfrom.presenter.connectors.wifi.WifiConnector;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -453,6 +456,89 @@ public class BluetoothConnectorTest {
 
         assertThat("Did not stop the bluetooth connector",
                 ((BluetoothConnector) activityController.get()).isFinishing(), is(true));
+    }
+
+    /**
+     * Verifies that the button keys are sent properly if navigation using volume keys is enabled.
+     * Test all methods at once since they are quite similar from implementation and if one test
+     * fails usually all tests fail.
+     */
+    @Test
+    public void verifyVolumeNavigationEnabled() throws InterruptedException {
+        initBondedDevice();
+
+        ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
+
+        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
+        BluetoothConnector connector =
+                (BluetoothConnector) activityController.create().resume().visible().get();
+
+        try {
+            ((ListView) connector.findViewById(R.id.paired_devices)).performItemClick(
+                    ((ListView) connector.findViewById(R.id.paired_devices)).getChildAt(0), 0, 0);
+
+            Thread.sleep(100);
+            ShadowLooper.runUiThreadTasks();
+
+            connector.onKeyUp(KeyEvent.KEYCODE_VOLUME_UP, null);
+            assertThat("Did not emit event for 'volume up key'",
+                    ShadowBluetoothSocket.getLastTransmittedString(),
+                    is("{ \"type\": \"command\", \"data\": \""
+                            + Command.NEXT_SLIDE.getCommand() + "\"}\n\n"));
+
+            connector.onKeyUp(KeyEvent.KEYCODE_VOLUME_DOWN, null);
+            assertThat("Did not emit event for 'volume down key'",
+                    ShadowBluetoothSocket.getLastTransmittedString(),
+                    is("{ \"type\": \"command\", \"data\": \""
+                            + Command.PREV_SLIDE.getCommand() + "\"}\n\n"));
+
+        } finally {
+            activityController.stop().destroy();
+        }
+    }
+
+    /**
+     * Verifies that the button keys are not sent if navigation using volume keys is disabled.
+     * Test all methods at once since they are quite similar from implementation and if one test
+     * fails usually all tests fail.
+     */
+    @Test
+    public void verifyVolumeNavigationDisabled() throws InterruptedException {
+        initBondedDevice();
+
+        ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
+
+        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
+        BluetoothConnector connector =
+                (BluetoothConnector) activityController.create().resume().visible().get();
+
+        Settings settings = new Settings(connector);
+        settings.useVolumeKeysForNavigation(false);
+
+        try {
+            ((ListView) connector.findViewById(R.id.paired_devices)).performItemClick(
+                    ((ListView) connector.findViewById(R.id.paired_devices)).getChildAt(0), 0, 0);
+
+            Thread.sleep(100);
+            ShadowLooper.runUiThreadTasks();
+
+            ShadowBluetoothSocket.resetLastTransmittedString();
+
+            connector.onKeyUp(KeyEvent.KEYCODE_VOLUME_UP, null);
+            Thread.sleep(100);
+            assertThat("Received unexpected event for 'volume up key'",
+                    ShadowBluetoothSocket.getLastTransmittedString(),
+                    is(""));
+
+            connector.onKeyUp(KeyEvent.KEYCODE_VOLUME_DOWN, null);
+            Thread.sleep(100);
+            assertThat("Received unexpected event for 'volume down key'",
+                    ShadowBluetoothSocket.getLastTransmittedString(),
+                    is(""));
+
+        } finally {
+            activityController.stop().destroy();
+        }
     }
 
     /**

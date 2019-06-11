@@ -127,8 +127,8 @@ class MockupServer {
      * Read data can be retreived using {@link #getLastTransmittedString()}
      */
     private class ReaderThread extends Thread {
-        private Socket mSocket;
-        private InputStream mInStream;
+        private final Socket mSocket;
+        private final InputStream mInStream;
 
         /**
          * Creates a new reader thread.
@@ -185,7 +185,7 @@ class MockupServer {
      * Data to be written can be set using {@link #setTransmittedString(String)}
      */
     private class WriterThread extends Thread {
-        private Socket mSocket;
+        private final Socket mSocket;
         private final OutputStream mOutStream;
 
         /**

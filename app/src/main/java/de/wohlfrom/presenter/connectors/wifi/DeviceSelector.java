@@ -94,8 +94,8 @@ public class DeviceSelector extends Fragment {
     /**
      * Some constants to be used for thread notification.
      */
-    public static final int ADDRESS_FOUND = 1;
-    public static final int ADDRESS_REMOVED = 2;
+    private static final int ADDRESS_FOUND = 1;
+    private static final int ADDRESS_REMOVED = 2;
 
     /**
      * Return values of this fragment
