@@ -68,7 +68,7 @@ public class Settings {
      *
      * @param value If the device should be silenced during presentation.
      */
-    void silenceDuringPresentation(boolean value) {
+    public void silenceDuringPresentation(boolean value) {
         SharedPreferences.Editor editor = mPreferences.edit();
         editor.putBoolean(SILENCE_DURING_PRESENTATION_SETTING, value);
         editor.apply();
@@ -79,7 +79,7 @@ public class Settings {
      *
      * @param value If the volume keys can be used for navigation.
      */
-    void useVolumeKeysForNavigation(boolean value) {
+    public void useVolumeKeysForNavigation(boolean value) {
         SharedPreferences.Editor editor = mPreferences.edit();
         editor.putBoolean(USE_VOLUME_KEY_SETTING, value);
         editor.apply();

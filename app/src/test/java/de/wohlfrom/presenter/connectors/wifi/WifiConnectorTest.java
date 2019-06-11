@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.view.KeyEvent;
 import android.widget.ListView;
 
 import org.junit.After;
@@ -43,11 +44,13 @@ import org.robolectric.shadows.ShadowNetworkInfo;
 import java.io.IOException;
 
 import de.wohlfrom.presenter.R;
+import de.wohlfrom.presenter.Settings;
 import de.wohlfrom.presenter.connectors.Command;
 import de.wohlfrom.presenter.connectors.ProtocolVersion;
 import de.wohlfrom.presenter.connectors.RemoteControl;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.robolectric.Shadows.shadowOf;
@@ -120,7 +123,7 @@ public class WifiConnectorTest {
     }
 
     @After
-    public void cleanupMockupServer() throws IOException, InterruptedException {
+    public void cleanupMockupServer() throws IOException {
         mockupServer.close();
         broadcastServer.stop();
     }
@@ -492,6 +495,95 @@ public class WifiConnectorTest {
 
             assertThat("Did not stop the wifi connector",
                     ((WifiConnector) activityController.get()).isFinishing(), is(true));
+        } finally {
+            activityController.stop().destroy();
+        }
+    }
+
+    /**
+     * Verifies that the button keys are sent properly if navigation using volume keys is enabled.
+     * Test all methods at once since they are quite similar from implementation and if one test
+     * fails usually all tests fail.
+     */
+    @Test
+    public void verifyVolumeNavigationEnabled() throws InterruptedException {
+        mockupServer.setTransmittedString(SERVER_VERSION_SUCCESS);
+
+        ActivityController activityController = Robolectric.buildActivity(WifiConnector.class);
+
+        WifiConnector connector =
+                (WifiConnector) activityController.create().resume().visible().get();
+
+        Thread.sleep(100);
+        ShadowLooper.runUiThreadTasks();
+
+        try {
+            ((ListView) connector.findViewById(R.id.broadcast_devices)).performItemClick(
+                    ((ListView) connector.findViewById(R.id.broadcast_devices)).getChildAt(0), 0, 0);
+
+            Thread.sleep(100);
+            ShadowLooper.runUiThreadTasks();
+
+            connector.onKeyUp(KeyEvent.KEYCODE_VOLUME_UP, null);
+            Thread.sleep(100);
+            assertThat("Did not emit event for 'volume up key'",
+                    mockupServer.getLastTransmittedString(),
+                    is("{ \"type\": \"command\", \"data\": \""
+                            + Command.NEXT_SLIDE.getCommand() + "\"}\n\n"));
+
+            connector.onKeyUp(KeyEvent.KEYCODE_VOLUME_DOWN, null);
+            Thread.sleep(100);
+            assertThat("Did not emit event for 'volume down key'",
+                    mockupServer.getLastTransmittedString(),
+                    is("{ \"type\": \"command\", \"data\": \""
+                            + Command.PREV_SLIDE.getCommand() + "\"}\n\n"));
+
+        } finally {
+            activityController.stop().destroy();
+        }
+    }
+
+    /**
+     * Verifies that the button keys are not sent if navigation using volume keys is disabled.
+     * Test all methods at once since they are quite similar from implementation and if one test
+     * fails usually all tests fail.
+     */
+    @Test
+    public void verifyVolumeNavigationDisabled() throws InterruptedException {
+        mockupServer.setTransmittedString(SERVER_VERSION_SUCCESS);
+
+        ActivityController activityController = Robolectric.buildActivity(WifiConnector.class);
+
+        WifiConnector connector =
+                (WifiConnector) activityController.create().resume().visible().get();
+
+        Settings settings = new Settings(connector);
+        settings.useVolumeKeysForNavigation(false);
+
+        Thread.sleep(100);
+        ShadowLooper.runUiThreadTasks();
+
+        try {
+            ((ListView) connector.findViewById(R.id.broadcast_devices)).performItemClick(
+                    ((ListView) connector.findViewById(R.id.broadcast_devices)).getChildAt(0), 0, 0);
+
+            Thread.sleep(100);
+            ShadowLooper.runUiThreadTasks();
+
+            mockupServer.resetLastTransmittedString();
+
+            connector.onKeyUp(KeyEvent.KEYCODE_VOLUME_UP, null);
+            Thread.sleep(100);
+            assertThat("Received unexpected event for 'volume up key'",
+                    mockupServer.getLastTransmittedString(),
+                    is(""));
+
+            connector.onKeyUp(KeyEvent.KEYCODE_VOLUME_DOWN, null);
+            Thread.sleep(100);
+            assertThat("Received unexpected event for 'volume down key'",
+                    mockupServer.getLastTransmittedString(),
+                    is(""));
+
         } finally {
             activityController.stop().destroy();
         }

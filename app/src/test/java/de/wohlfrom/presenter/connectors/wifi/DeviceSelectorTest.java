@@ -36,16 +36,9 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.util.Objects;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import de.wohlfrom.presenter.R;
-import de.wohlfrom.presenter.connectors.RemoteControl;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
