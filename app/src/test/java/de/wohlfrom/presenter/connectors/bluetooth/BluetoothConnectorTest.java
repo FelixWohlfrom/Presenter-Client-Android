@@ -102,8 +102,7 @@ public class BluetoothConnectorTest {
      */
     private void initBondedDevice() {
         HashSet<BluetoothDevice> devices = new HashSet<>();
-        devices.add(ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS));
+        devices.add(ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS));
         shadowOf(BluetoothAdapter.getDefaultAdapter()).setBondedDevices(devices);
     }
 

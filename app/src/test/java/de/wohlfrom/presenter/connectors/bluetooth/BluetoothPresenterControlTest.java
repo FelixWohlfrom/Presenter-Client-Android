@@ -119,8 +119,7 @@ public class BluetoothPresenterControlTest {
     @Test
     public void testConnectingState() {
         control = new BluetoothPresenterControl(new Handler() {});
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                                                    .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         assertThat(control.getState(), is(RemoteControl.ServiceState.CONNECTING));
     }
@@ -133,8 +132,7 @@ public class BluetoothPresenterControlTest {
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
 
         control = new BluetoothPresenterControl(new Handler() {});
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
     }
@@ -146,8 +144,7 @@ public class BluetoothPresenterControlTest {
     @Test
     public void testStartAfterConnecting() throws InterruptedException {
         control = new BluetoothPresenterControl(new Handler() {});
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
 
@@ -165,8 +162,7 @@ public class BluetoothPresenterControlTest {
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
 
         control = new BluetoothPresenterControl(new Handler() {});
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
 
@@ -180,8 +176,7 @@ public class BluetoothPresenterControlTest {
     @Test
     public void testConnectTwiceConnecting() throws InterruptedException {
         control = new BluetoothPresenterControl(new Handler() {});
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
 
@@ -198,8 +193,7 @@ public class BluetoothPresenterControlTest {
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
 
         control = new BluetoothPresenterControl(new Handler() {});
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
 
@@ -215,8 +209,7 @@ public class BluetoothPresenterControlTest {
     public void testConnectedStateFailure() throws InterruptedException {
         ShadowBluetoothSocket.setConnectionSucceed(false);
         control = new BluetoothPresenterControl(new Handler() {});
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
     }
@@ -230,8 +223,7 @@ public class BluetoothPresenterControlTest {
         ShadowBluetoothSocket.setConnectionSucceed(false);
         ShadowBluetoothSocket.setFailClosing(true);
         control = new BluetoothPresenterControl(new Handler() {});
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
     }
@@ -243,8 +235,7 @@ public class BluetoothPresenterControlTest {
     public void testConnectedStreamReadFailure() throws InterruptedException {
         ShadowBluetoothSocket.setFailStreamGetter(true);
         control = new BluetoothPresenterControl(new Handler() {});
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
     }
@@ -259,8 +250,7 @@ public class BluetoothPresenterControlTest {
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
 
         control = new BluetoothPresenterControl(new Handler() {});
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
 
@@ -276,8 +266,7 @@ public class BluetoothPresenterControlTest {
     public void testConnectedStateFailureInvalidVersion() throws InterruptedException {
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_FAILURE);
         control = new BluetoothPresenterControl(new Handler() {});
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
@@ -309,8 +298,7 @@ public class BluetoothPresenterControlTest {
 
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         shadowOf(bluetoothDevice).setName(DEVICE_NAME);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
@@ -349,8 +337,7 @@ public class BluetoothPresenterControlTest {
                 }
             }
         });
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
@@ -385,8 +372,7 @@ public class BluetoothPresenterControlTest {
                 }
             }
         });
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
@@ -417,8 +403,7 @@ public class BluetoothPresenterControlTest {
                 }
             }
         });
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
 
@@ -439,8 +424,7 @@ public class BluetoothPresenterControlTest {
     @Test
     public void testClientDisconnected() throws InterruptedException {
         control = new BluetoothPresenterControl(new Handler() {});
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
 
@@ -455,8 +439,7 @@ public class BluetoothPresenterControlTest {
     @Test
     public void testServerDisconnectedDuringInformationExchange() throws InterruptedException {
         control = new BluetoothPresenterControl(new Handler() {});
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
 
@@ -473,8 +456,7 @@ public class BluetoothPresenterControlTest {
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
 
         control = new BluetoothPresenterControl(new Handler() {});
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
 
@@ -500,8 +482,7 @@ public class BluetoothPresenterControlTest {
                 }
             }
         });
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
 
@@ -520,8 +501,7 @@ public class BluetoothPresenterControlTest {
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
 
         control = new BluetoothPresenterControl(new Handler() {});
-        BluetoothDevice bluetoothDevice = ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(DEVICE_ADDRESS);
+        BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(DEVICE_ADDRESS);
         control.connect(bluetoothDevice);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
 
