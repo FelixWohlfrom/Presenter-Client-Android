@@ -436,7 +436,7 @@ public class WifiConnectorTest {
             
             broadcastServer.stop();
             
-            Thread.sleep(2000);
+            Thread.sleep(3000);
             ShadowLooper.runUiThreadTasks();
 
             assertThat("Did not switch back to wifi device selection",
