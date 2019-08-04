@@ -36,6 +36,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowBluetoothAdapter;
+import org.robolectric.shadows.ShadowBluetoothDevice;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -80,8 +81,7 @@ public class DeviceSelectorTest {
      */
     private void initBondedDevice() {
         HashSet<BluetoothDevice> devices = new HashSet<>();
-        devices.add(ShadowBluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(BLUETOOTH_DEVICE_ID));
+        devices.add(ShadowBluetoothDevice.newInstance(BLUETOOTH_DEVICE_ID));
         shadowOf(BluetoothAdapter.getDefaultAdapter()).setBondedDevices(devices);
     }
 
@@ -148,11 +148,11 @@ public class DeviceSelectorTest {
     @Test
     public void verifyDestroyingOneDevice() {
         initBondedDevice();
-        ShadowBluetoothAdapter.getDefaultAdapter().startDiscovery();
+        BluetoothAdapter.getDefaultAdapter().startDiscovery();
         activityController.create().resume().destroy();
 
         assertThat("Discovery not stopped",
-                ShadowBluetoothAdapter.getDefaultAdapter().isDiscovering(), is(false));
+                BluetoothAdapter.getDefaultAdapter().isDiscovering(), is(false));
     }
 
     /**
@@ -161,14 +161,14 @@ public class DeviceSelectorTest {
      */
     @Test
     public void clickOnSearchDiscoveryRunning() {
-        ShadowBluetoothAdapter.getDefaultAdapter().startDiscovery();
+        BluetoothAdapter.getDefaultAdapter().startDiscovery();
         activityController.create().resume();
 
         View view = deviceSelector.getView();
         Objects.requireNonNull(view).findViewById(R.id.button_scan).performClick();
 
         assertThat("Did not start device discovery",
-                ShadowBluetoothAdapter.getDefaultAdapter().isDiscovering(), is(true));
+                BluetoothAdapter.getDefaultAdapter().isDiscovering(), is(true));
     }
 
     /**
@@ -183,7 +183,7 @@ public class DeviceSelectorTest {
         Objects.requireNonNull(view).findViewById(R.id.button_scan).performClick();
 
         assertThat("Did not start device discovery",
-                ShadowBluetoothAdapter.getDefaultAdapter().isDiscovering(), is(true));
+                BluetoothAdapter.getDefaultAdapter().isDiscovering(), is(true));
     }
 
     /**
@@ -219,7 +219,7 @@ public class DeviceSelectorTest {
         // First send out the intent for the new device
         Intent intent = new Intent(BluetoothDevice.ACTION_FOUND);
         intent.putExtra(BluetoothDevice.EXTRA_DEVICE,
-                ShadowBluetoothAdapter.getDefaultAdapter().getRemoteDevice(BLUETOOTH_DEVICE_ID));
+                BluetoothAdapter.getDefaultAdapter().getRemoteDevice(BLUETOOTH_DEVICE_ID));
         RuntimeEnvironment.application.sendBroadcast(intent);
 
         View view = deviceSelector.getView();
