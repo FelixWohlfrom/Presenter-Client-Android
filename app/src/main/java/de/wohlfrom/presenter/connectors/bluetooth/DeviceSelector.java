@@ -175,15 +175,15 @@ public class DeviceSelector extends Fragment {
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
+        // Unregister broadcast listeners
+        getActivity().unregisterReceiver(mReceiver);
 
         // Make sure we're not doing discovery anymore
         if (mBtAdapter != null) {
             mBtAdapter.cancelDiscovery();
         }
 
-        // Unregister broadcast listeners
-        getActivity().unregisterReceiver(mReceiver);
+        super.onDestroy();
     }
 
     /**
