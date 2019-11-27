@@ -1,4 +1,4 @@
-## Presenter App for Android [![Build Status](https://travis-ci.org/FelixWohlfrom/Presenter-Client-Android.svg?branch=master)](https://travis-ci.org/FelixWohlfrom/Presenter-Client-Android) [![codecov](https://codecov.io/gh/FelixWohlfrom/Presenter-Client-Android/branch/master/graph/badge.svg)](https://codecov.io/gh/FelixWohlfrom/Presenter-Client-Android)
+## Presenter App for Android [![Build Status](https://travis-ci.com/FelixWohlfrom/Presenter-Client-Android.svg?branch=master)](https://travis-ci.com/FelixWohlfrom/Presenter-Client-Android) [![codecov](https://codecov.io/gh/FelixWohlfrom/Presenter-Client-Android/branch/master/graph/badge.svg)](https://codecov.io/gh/FelixWohlfrom/Presenter-Client-Android)
 
 This app can be used to remote control a presentation e.g. on your notebook.
 
