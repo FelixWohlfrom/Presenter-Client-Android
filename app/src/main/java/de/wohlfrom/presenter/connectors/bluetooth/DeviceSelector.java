@@ -19,7 +19,9 @@
 package de.wohlfrom.presenter.connectors.bluetooth;
 
 import android.app.Activity;
-import android.app.Fragment;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -88,13 +90,13 @@ public class DeviceSelector extends Fragment {
 
     // Required for backwards compatibility
     @Override
-    public void onAttach(Activity activity) {
+    public void onAttach(@NonNull Activity activity) {
         super.onAttach(activity);
         initListener(activity);
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         initListener(context);
     }

@@ -57,7 +57,7 @@ public abstract class RemoteControl {
     /**
      * Internal class that represents a json message transmitted via remote protocol.
      */
-    protected class PresenterMessage {
+    protected static class PresenterMessage {
         /**
          * The type of the message.
          */

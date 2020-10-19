@@ -18,15 +18,11 @@
 
 package de.wohlfrom.presenter;
 
-import android.app.Fragment;
-import android.os.Build;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.ParameterizedRobolectricTestRunner;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
-import org.robolectric.annotation.Config;
 import org.robolectric.util.Pair;
 
 import java.util.Arrays;
@@ -34,22 +30,19 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import androidx.fragment.app.Fragment;
 import de.wohlfrom.presenter.connectors.ProtocolVersion;
 import de.wohlfrom.presenter.connectors.RemoteControl;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
 
 /**
  * This test verifies that instantiation of presenter fragment works fine.
  * It will instantiate all possible combinations of supported protocol versions.
  */
 @RunWith(ParameterizedRobolectricTestRunner.class)
-@Config(manifest = "src/main/AndroidManifest.xml",
-        sdk = {
-            Build.VERSION_CODES.M
-        })
 public class PresenterInstantiationTest {
 
     /**
@@ -107,9 +100,9 @@ public class PresenterInstantiationTest {
     @Test
     public void fragmentLifecycle() {
         Fragment presenter = Presenter.newInstance(new ProtocolVersion(minValue, maxValue));
-        ActivityController activityController = Robolectric.buildActivity(
-                PresenterTestDummyActivity.class);
-        ((PresenterTestDummyActivity) activityController.get()).setFragment(presenter);
+        ActivityController<PresenterTestDummyActivity> activityController =
+                Robolectric.buildActivity(PresenterTestDummyActivity.class);
+        activityController.get().setFragment(presenter);
         activityController.create().start().resume().visible().stop().destroy();
     }
 }

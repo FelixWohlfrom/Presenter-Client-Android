@@ -1,6 +1,5 @@
 language: android
-jdk: oraclejdk8
-sudo: false
+jdk: openjdk9
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -11,28 +10,23 @@ cache:
     - $HOME/.gradle/wrapper/
     - $HOME/.android/build-cache
 
-android:
-  components:
-    - tools
-    - platform-tools
-    - tools
-    - build-tools-26.0.2
-    - android-22
-    - sys-img-armeabi-v7a-android-22
-    - extra-android-m2repository
-
 before_install:
-  # in android block, deprecated 'android' tool will be used to install.
-  # android-28 package has a wrong checksum there, so we use new sdkmanager for
-  # installation
-  - yes | sdkmanager "platforms;android-28"
+  # In travis android block, deprecated 'android' tool will be used to install.
+  # Use the new sdkmanager for newer versions of the tools.
+  # Also jdk8 is required to run sdkmanager -.-
+  - jdk_switcher use oraclejdk8
+  - echo y | sdkmanager "tools" > /dev/null
+  - echo y | sdkmanager "platform-tools" > /dev/null
+  - echo y | sdkmanager "platforms;android-30" > /dev/null
+  - echo y | sdkmanager "emulator" > /dev/null
+  - echo y | sdkmanager "system-images;android-30;google_apis;x86" > /dev/null
 
 before_script:
   # Create emulator
-  - echo no | android create avd --force -n test -t android-22
+  - echo no | avdmanager create avd --force -n test -k "system-images;android-30;google_apis;x86"
 
 script:
-  - ./build.sh
+  - JAVA_HOME=/home/travis/openjdk9 ./build.sh
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

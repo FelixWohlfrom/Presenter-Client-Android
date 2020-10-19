@@ -19,30 +19,28 @@
 package de.wohlfrom.presenter;
 
 import android.os.Build;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.matcher.BoundedMatcher;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
-import android.support.test.rule.ActivityTestRule;
-import android.support.test.runner.AndroidJUnit4;
 import android.widget.Toolbar;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.isAssignableFrom;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withResourceName;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
-import static org.hamcrest.MatcherAssert.assertThat;
+import androidx.test.core.app.ActivityScenario;
+import androidx.test.espresso.matcher.BoundedMatcher;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
+import androidx.test.platform.app.InstrumentationRegistry;
+
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withResourceName;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 
 /**
  * Basic verification for main activity interactions.
@@ -51,19 +49,12 @@ import static org.hamcrest.Matchers.notNullValue;
 public class MainActivityTest {
 
     /**
-     * The rule to interact with the main activity.
-     */
-    @Rule
-    public final ActivityTestRule<MainActivity> mainActivityRule
-            = new ActivityTestRule<>(MainActivity.class);
-
-    /**
      * Test that the main activity can be started at all.
      */
     @Test
     @SmallTest
     public void instantiateActivity() {
-        assertThat(mainActivityRule.getActivity(), is(notNullValue()));
+        ActivityScenario.launch(MainActivity.class);
     }
 
     /**
@@ -72,8 +63,11 @@ public class MainActivityTest {
     @Test
     @MediumTest
     public void startSettingsActivity() {
+        ActivityScenario.launch(MainActivity.class);
+
         CharSequence settingsTitle =
-                InstrumentationRegistry.getTargetContext().getString(R.string.settings);
+                InstrumentationRegistry.getInstrumentation()
+                        .getTargetContext().getString(R.string.settings);
 
         onView(withId(R.id.settings)).perform(click());
 
@@ -92,9 +86,13 @@ public class MainActivityTest {
     @Test
     @MediumTest
     public void startAboutActivity() {
+        ActivityScenario.launch(MainActivity.class);
+
         CharSequence aboutTitle =
-                InstrumentationRegistry.getTargetContext().getString(R.string.about,
-                        InstrumentationRegistry.getTargetContext().getString(R.string.app_name));
+                InstrumentationRegistry.getInstrumentation()
+                        .getTargetContext().getString(R.string.about,
+                            InstrumentationRegistry.getInstrumentation()
+                                    .getTargetContext().getString(R.string.app_name));
 
         onView(withId(R.id.about)).perform(click());
 

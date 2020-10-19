@@ -20,8 +20,6 @@ package de.wohlfrom.presenter.connectors.bluetooth;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -30,10 +28,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.view.KeyEvent;
 import android.widget.Toast;
 
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
 import de.wohlfrom.presenter.Connecting;
 import de.wohlfrom.presenter.Presenter;
 import de.wohlfrom.presenter.R;
@@ -46,7 +48,7 @@ import de.wohlfrom.presenter.connectors.RemoteControl;
  * a bluetooth connection.
  * It shows the bluetooth device selector and afterwards the presenter fragment.
  */
-public class BluetoothConnector extends Activity
+public class BluetoothConnector extends FragmentActivity
         implements DeviceSelector.DeviceListResultListener,
         Presenter.PresenterListener {
 
@@ -169,7 +171,7 @@ public class BluetoothConnector extends Activity
             switch (mPresenterControl.getState()) {
                 case CONNECTED: {
                     // show presenter fragment
-                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                     Fragment fragment = Presenter.newInstance(
                             mPresenterControl.getActiveProtocolVersion());
                     transaction.replace(R.id.connector_content, fragment);
@@ -181,7 +183,7 @@ public class BluetoothConnector extends Activity
                 }
                 case CONNECTING: {
                     // show "connecting" fragment
-                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                     Fragment fragment = new Connecting();
                     transaction.replace(R.id.connector_content, fragment);
                     transaction.addToBackStack(null);
@@ -192,7 +194,7 @@ public class BluetoothConnector extends Activity
                 default: {
                     // show device selector
                     setTitle(R.string.title_device_selector);
-                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                     Fragment fragment = new DeviceSelector();
                     transaction.replace(R.id.connector_content, fragment);
                     transaction.commit();
@@ -206,7 +208,7 @@ public class BluetoothConnector extends Activity
      * The handler reacts on status changes of our service.
      */
     @SuppressLint("HandlerLeak") // We don't leak any handlers here
-    private final Handler mHandler = new Handler() {
+    private final Handler mHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             if (msg.what == RemoteControl.ServiceState.CONNECTED.ordinal()) {
@@ -218,12 +220,12 @@ public class BluetoothConnector extends Activity
                         Toast.LENGTH_SHORT).show();
 
                 // Remove "connecting" fragment
-                if (getFragmentManager().getBackStackEntryCount() > 0) {
-                    getFragmentManager().popBackStack();
+                if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                    getSupportFragmentManager().popBackStack();
                 }
 
                 // show presenter fragment
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 Fragment fragment = Presenter.newInstance(
                         mPresenterControl.getActiveProtocolVersion());
                 transaction.replace(R.id.connector_content, fragment);
@@ -236,7 +238,7 @@ public class BluetoothConnector extends Activity
             } else if (msg.what == RemoteControl.ServiceState.CONNECTING.ordinal()) {
                 // show "connecting" fragment
                 setTitle(R.string.connecting_to_service);
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 Fragment fragment = new Connecting();
                 transaction.replace(R.id.connector_content, fragment);
                 transaction.addToBackStack(null);
@@ -270,9 +272,9 @@ public class BluetoothConnector extends Activity
                         Toast.LENGTH_LONG).show();
             }
 
-            if (getFragmentManager().getBackStackEntryCount() > 0) {
+            if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
                 if (mBluetoothConnectorVisible) {
-                    getFragmentManager().popBackStack();
+                    getSupportFragmentManager().popBackStack();
                 }
 
                 mPresenterVisible = false;
@@ -291,6 +293,7 @@ public class BluetoothConnector extends Activity
      * @param data        Additional data, unused.
      */
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_ENABLE_BT && resultCode != Activity.RESULT_OK) {
             // User did not enable Bluetooth or an error occurred
             Toast.makeText(this, R.string.bluetooth_required_leaving,

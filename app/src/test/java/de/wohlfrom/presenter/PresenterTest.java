@@ -19,26 +19,24 @@
 package de.wohlfrom.presenter;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.media.AudioManager;
-import android.os.Build;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
-import org.robolectric.annotation.Config;
 
 import java.util.Objects;
 
+import androidx.fragment.app.Fragment;
 import de.wohlfrom.presenter.connectors.ProtocolVersion;
 import de.wohlfrom.presenter.connectors.RemoteControl;
 
 import static android.content.Context.AUDIO_SERVICE;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 
 /**
  * Verifies that the presenter fragment works fine.
@@ -46,7 +44,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * will be used within presenter fragment.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = "src/main/AndroidManifest.xml", sdk = {Build.VERSION_CODES.M})
 public class PresenterTest {
 
     /**
@@ -55,9 +52,9 @@ public class PresenterTest {
     @Test
     public void checkProtocolVersion1() {
         Fragment presenter = Presenter.newInstance(new ProtocolVersion(1, 1));
-        ActivityController activityController = Robolectric.buildActivity(
-                PresenterTestDummyActivity.class);
-        ((PresenterTestDummyActivity) activityController.get()).setFragment(presenter);
+        ActivityController<PresenterTestDummyActivity> activityController =
+                Robolectric.buildActivity(PresenterTestDummyActivity.class);
+        activityController.get().setFragment(presenter);
         activityController.create().resume().visible();
         
         assertThat("Did not find 'next slide' button",
@@ -66,7 +63,7 @@ public class PresenterTest {
 
         presenter.getView().findViewById(R.id.next_slide).performClick();
         assertThat("Did not click on 'next slide' button",
-                ((PresenterTestDummyActivity) activityController.get()).isNextSlidePressed());
+                activityController.get().isNextSlidePressed());
 
         assertThat("Did not find 'prev slide' button",
                 presenter.getView().findViewById(R.id.prev_slide),
@@ -74,7 +71,7 @@ public class PresenterTest {
 
         presenter.getView().findViewById(R.id.prev_slide).performClick();
         assertThat("Did not click on 'prev slide' button",
-                ((PresenterTestDummyActivity) activityController.get()).isPrevSlidePressed());
+                activityController.get().isPrevSlidePressed());
     }
 
     /**
@@ -83,9 +80,9 @@ public class PresenterTest {
     @Test
     public void checkProtocolVersion2() {
         Fragment presenter = Presenter.newInstance(new ProtocolVersion(2, 2));
-        ActivityController activityController = Robolectric.buildActivity(
-                PresenterTestDummyActivity.class);
-        ((PresenterTestDummyActivity) activityController.get()).setFragment(presenter);
+        ActivityController<PresenterTestDummyActivity> activityController =
+                Robolectric.buildActivity(PresenterTestDummyActivity.class);
+        activityController.get().setFragment(presenter);
         activityController.create().resume().visible();
 
         assertThat("Did not find 'start presentation' button",
@@ -94,8 +91,7 @@ public class PresenterTest {
 
         presenter.getView().findViewById(R.id.start_presentation).performClick();
         assertThat("Did not click on 'start presentation' button",
-                ((PresenterTestDummyActivity) activityController.get())
-                        .isStartPresentationPressed());
+                activityController.get().isStartPresentationPressed());
 
         assertThat("Did not find 'stop presentation' button",
                 presenter.getView().findViewById(R.id.stop_presentation),
@@ -103,8 +99,7 @@ public class PresenterTest {
 
         presenter.getView().findViewById(R.id.stop_presentation).performClick();
         assertThat("Did not click on 'stop presentation' button",
-                ((PresenterTestDummyActivity) activityController.get())
-                        .isStopPresentationPressed());
+                activityController.get().isStopPresentationPressed());
     }
 
     /**
@@ -114,28 +109,28 @@ public class PresenterTest {
     @Test
     public void silencingRestoring() {
         Fragment presenter = Presenter.newInstance(RemoteControl.CLIENT_PROTOCOL_VERSION);
-        ActivityController activityController = Robolectric.buildActivity(
-                PresenterTestDummyActivity.class);
-        ((PresenterTestDummyActivity) activityController.get()).setFragment(presenter);
+        ActivityController<PresenterTestDummyActivity> activityController =
+                Robolectric.buildActivity(PresenterTestDummyActivity.class);
+        activityController.get().setFragment(presenter);
         
-        Activity activity = (Activity) activityController.get();
+        Activity activity = activityController.get();
         
         Settings settings = new Settings(activity);
         settings.silenceDuringPresentation(true);
 
-        ((AudioManager) Objects.requireNonNull(activity.getSystemService(AUDIO_SERVICE)))
+        ((AudioManager)activity.getSystemService(AUDIO_SERVICE))
                 .setRingerMode(AudioManager.RINGER_MODE_NORMAL);
 
         activityController.create().resume().visible();
         
         assertThat("Did not silence the device", 
-                ((AudioManager) Objects.requireNonNull(activity.getSystemService(AUDIO_SERVICE))).getRingerMode(),
+                ((AudioManager)activity.getSystemService(AUDIO_SERVICE)).getRingerMode(),
                 is(AudioManager.RINGER_MODE_SILENT));
         
         activityController.stop();
 
         assertThat("Did not restore previous ringing mode",
-                ((AudioManager) Objects.requireNonNull(activity.getSystemService(AUDIO_SERVICE))).getRingerMode(),
+                ((AudioManager)activity.getSystemService(AUDIO_SERVICE)).getRingerMode(),
                 is(AudioManager.RINGER_MODE_NORMAL));
         
     }

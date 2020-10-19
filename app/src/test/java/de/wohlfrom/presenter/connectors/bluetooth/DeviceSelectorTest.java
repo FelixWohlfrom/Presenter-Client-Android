@@ -18,11 +18,11 @@
 
 package de.wohlfrom.presenter.connectors.bluetooth;
 
-import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Build;
+import android.os.Looper;
 import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowBluetoothAdapter;
@@ -41,20 +40,20 @@ import org.robolectric.shadows.ShadowBluetoothDevice;
 import java.util.HashSet;
 import java.util.Objects;
 
+import androidx.fragment.app.testing.FragmentScenario;
+import androidx.test.core.app.ApplicationProvider;
 import de.wohlfrom.presenter.R;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.FragmentTestUtil.startFragment;
 
 /**
  * These tests ensure that the device selector fragment works properly.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = "src/main/AndroidManifest.xml",
-        shadows = {ShadowBluetoothAdapter.class},
+@Config(shadows = {ShadowBluetoothAdapter.class},
         sdk = {
             Build.VERSION_CODES.LOLLIPOP_MR1,
             Build.VERSION_CODES.M
@@ -64,7 +63,7 @@ public class DeviceSelectorTest {
     private final String BLUETOOTH_DEVICE_ID = "AA:BB:CC:DD:EE:FF";
 
     private DeviceSelector deviceSelector;
-    private ActivityController activityController;
+    private ActivityController<DummyActivity> activityController;
 
     /**
      * Initializes the {@link DeviceSelector} fragment.
@@ -73,7 +72,7 @@ public class DeviceSelectorTest {
     public void initDeviceSelector() {
         deviceSelector = new DeviceSelector();
         activityController = Robolectric.buildActivity(DummyActivity.class);
-        ((DummyActivity) activityController.get()).setFragment(deviceSelector);
+        activityController.get().setFragment(deviceSelector);
     }
 
     /**
@@ -91,8 +90,7 @@ public class DeviceSelectorTest {
      */
     @Test(expected = ClassCastException.class)
     public void instantiateNoDeviceListResultListener() {
-        Fragment fragment = new DeviceSelector();
-        startFragment(fragment);
+        FragmentScenario.launch(DeviceSelector.class);
     }
 
     /**
@@ -204,8 +202,7 @@ public class DeviceSelectorTest {
         listView.performItemClick(itemView, 0, adapter.getItemId(0));
 
         assertThat("Received wrong value on device listener",
-                ((DummyActivity)activityController.get()).getSelectedDevice(),
-                is(BLUETOOTH_DEVICE_ID));
+                activityController.get().getSelectedDevice(), is(BLUETOOTH_DEVICE_ID));
     }
 
     /**
@@ -220,7 +217,8 @@ public class DeviceSelectorTest {
         Intent intent = new Intent(BluetoothDevice.ACTION_FOUND);
         intent.putExtra(BluetoothDevice.EXTRA_DEVICE,
                 BluetoothAdapter.getDefaultAdapter().getRemoteDevice(BLUETOOTH_DEVICE_ID));
-        RuntimeEnvironment.application.sendBroadcast(intent);
+        ApplicationProvider.getApplicationContext().sendBroadcast(intent);
+        shadowOf(Looper.getMainLooper()).idle();
 
         View view = deviceSelector.getView();
         assertThat("Did not discover new device",
@@ -237,7 +235,8 @@ public class DeviceSelectorTest {
 
         // Directly send out intent for discovery finished
         Intent intent = new Intent(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        RuntimeEnvironment.application.sendBroadcast(intent);
+        ApplicationProvider.getApplicationContext().sendBroadcast(intent);
+        shadowOf(Looper.getMainLooper()).idle();
 
         View view = deviceSelector.getView();
 

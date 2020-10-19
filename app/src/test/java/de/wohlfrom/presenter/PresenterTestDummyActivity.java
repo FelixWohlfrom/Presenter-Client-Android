@@ -18,10 +18,11 @@
 
 package de.wohlfrom.presenter;
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.os.Bundle;
+
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
 
 /**
  * This activity can be used to test the fragments used for bluetooth connection.
@@ -29,13 +30,13 @@ import android.os.Bundle;
  * listeners.
  * Use the following snippet to run an activity with a given fragment:
  * <code>
- *     ActivityController activityController = 
+ *     ActivityController<PresenterTestDummyActivity> activityController =
  *          Robolectric.buildActivity(PresenterTestDummyActivity.class);
- *     ((PresenterTestDummyActivity) activityController.get()).setFragment([yourFragment]);
+ *     activityController.get().setFragment([yourFragment]);
  *     activityController.create().resume();
  * </code>
  */
-public class PresenterTestDummyActivity extends Activity
+public class PresenterTestDummyActivity extends FragmentActivity
         implements Presenter.PresenterListener {
 
     private Fragment fragment;
@@ -58,7 +59,7 @@ public class PresenterTestDummyActivity extends Activity
     @Override
     public void onResume() {
         super.onResume();
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.connector_content, fragment);
         transaction.commit();
     }

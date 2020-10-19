@@ -32,7 +32,7 @@ import java.net.SocketException;
 class MockupServer {
     private String stringToTransmit = null;
     
-    private ServerSocket mServer;
+    private final ServerSocket mServer;
     private ReaderThread mReaderThread = null;
     private WriterThread mWriterThread = null;
 

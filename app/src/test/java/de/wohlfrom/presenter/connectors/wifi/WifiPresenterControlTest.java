@@ -19,6 +19,7 @@
 package de.wohlfrom.presenter.connectors.wifi;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 
 import org.junit.After;
@@ -26,12 +27,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.shadows.ShadowLooper;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import androidx.annotation.NonNull;
 import de.wohlfrom.presenter.connectors.Command;
 import de.wohlfrom.presenter.connectors.ProtocolVersion;
 import de.wohlfrom.presenter.connectors.RemoteControl;
@@ -39,8 +40,9 @@ import de.wohlfrom.presenter.connectors.RemoteControl;
 import static junit.framework.Assert.fail;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
-import static org.hamcrest.core.IsNull.notNullValue;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * These testcases verify that the WifiPresenterControl class works as expected.
@@ -98,7 +100,7 @@ public class WifiPresenterControlTest {
      */
     @Test
     public void instantiationTest() {
-        control = new WifiPresenterControl(new Handler() {});
+        control = new WifiPresenterControl(new Handler(Looper.myLooper()) {});
         assertThat(control, is(notNullValue()));
         assertThat(control.getState(), is(RemoteControl.ServiceState.NONE));
     }
@@ -108,7 +110,7 @@ public class WifiPresenterControlTest {
      */
     @Test
     public void testConnectingState() {
-        control = new WifiPresenterControl(new Handler() {});
+        control = new WifiPresenterControl(new Handler(Looper.myLooper()) {});
         control.connect(BroadcastServer.WIFI_DEVICE_NAME, "127.0.0.1");
         assertThat(control.getState(), is(RemoteControl.ServiceState.CONNECTING));
     }
@@ -120,7 +122,7 @@ public class WifiPresenterControlTest {
     public void testConnectedStateSuccess() throws InterruptedException {
         mockupServer.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        control = new WifiPresenterControl(new Handler() {});
+        control = new WifiPresenterControl(new Handler(Looper.myLooper()) {});
         control.connect(BroadcastServer.WIFI_DEVICE_NAME, BroadcastServer.WIFI_IP_ADDRESS);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
     }
@@ -131,7 +133,7 @@ public class WifiPresenterControlTest {
      */
     @Test
     public void testStartAfterConnecting() throws InterruptedException {
-        control = new WifiPresenterControl(new Handler() {});
+        control = new WifiPresenterControl(new Handler(Looper.myLooper()) {});
         control.connect(BroadcastServer.WIFI_DEVICE_NAME, BroadcastServer.WIFI_IP_ADDRESS);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
 
@@ -148,7 +150,7 @@ public class WifiPresenterControlTest {
     public void testStartAfterConnected() throws InterruptedException {
         mockupServer.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        control = new WifiPresenterControl(new Handler() {});
+        control = new WifiPresenterControl(new Handler(Looper.myLooper()) {});
         control.connect(BroadcastServer.WIFI_DEVICE_NAME, BroadcastServer.WIFI_IP_ADDRESS);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
 
@@ -161,7 +163,7 @@ public class WifiPresenterControlTest {
      */
     @Test
     public void testConnectTwiceConnecting() throws InterruptedException {
-        control = new WifiPresenterControl(new Handler() {});
+        control = new WifiPresenterControl(new Handler(Looper.myLooper()) {});
         control.connect(BroadcastServer.WIFI_DEVICE_NAME, BroadcastServer.WIFI_IP_ADDRESS);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
 
@@ -177,7 +179,7 @@ public class WifiPresenterControlTest {
     public void testConnectTwiceConnected() throws InterruptedException {
         mockupServer.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        control = new WifiPresenterControl(new Handler() {});
+        control = new WifiPresenterControl(new Handler(Looper.myLooper()) {});
         control.connect(BroadcastServer.WIFI_DEVICE_NAME, BroadcastServer.WIFI_IP_ADDRESS);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
 
@@ -192,7 +194,7 @@ public class WifiPresenterControlTest {
     @Test
     public void testConnectedStateFailure() throws InterruptedException, IOException {
         mockupServer.close();
-        control = new WifiPresenterControl(new Handler() {});
+        control = new WifiPresenterControl(new Handler(Looper.myLooper()) {});
         control.connect(BroadcastServer.WIFI_DEVICE_NAME, BroadcastServer.WIFI_IP_ADDRESS);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
     }
@@ -204,7 +206,7 @@ public class WifiPresenterControlTest {
     @Test
     public void testConnectedStateFailureInvalidVersion() throws InterruptedException {
         mockupServer.setTransmittedString(SERVER_VERSION_FAILURE);
-        control = new WifiPresenterControl(new Handler() {});
+        control = new WifiPresenterControl(new Handler(Looper.myLooper()) {});
         control.connect(BroadcastServer.WIFI_DEVICE_NAME, BroadcastServer.WIFI_IP_ADDRESS);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
@@ -219,9 +221,9 @@ public class WifiPresenterControlTest {
         final CountDownLatch connectingMessageReceived = new CountDownLatch(1);
         final CountDownLatch connectedMessageReceived = new CountDownLatch(1);
 
-        control = new WifiPresenterControl(new Handler() {
+        control = new WifiPresenterControl(new Handler(Looper.myLooper()) {
             @Override
-            public void handleMessage(Message msg) {
+            public void handleMessage(@NonNull Message msg) {
                 if (msg.what == RemoteControl.ServiceState.CONNECTING.ordinal()) {
                     connectingMessageReceived.countDown();
                 } else if (msg.what == RemoteControl.ServiceState.CONNECTED.ordinal()) {
@@ -237,7 +239,7 @@ public class WifiPresenterControlTest {
         
         control.connect(BroadcastServer.WIFI_DEVICE_NAME, BroadcastServer.WIFI_IP_ADDRESS);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
-        ShadowLooper.runUiThreadTasks();
+        shadowOf(Looper.getMainLooper()).idle();
 
         assertThat("Did not receive 'connecting' message",
                 connectingMessageReceived.await(MESSAGE_RECEIVING_TIMEOUT, TimeUnit.MILLISECONDS),
@@ -257,9 +259,9 @@ public class WifiPresenterControlTest {
         final CountDownLatch connectingMessageReceived = new CountDownLatch(1);
         final CountDownLatch errorMessageReceived = new CountDownLatch(1);
 
-        control = new WifiPresenterControl(new Handler() {
+        control = new WifiPresenterControl(new Handler(Looper.myLooper()) {
             @Override
-            public void handleMessage(Message msg) {
+            public void handleMessage(@NonNull Message msg) {
                 if (msg.what == RemoteControl.ServiceState.CONNECTING.ordinal()) {
                     connectingMessageReceived.countDown();
 
@@ -276,7 +278,7 @@ public class WifiPresenterControlTest {
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
 
-        ShadowLooper.runUiThreadTasks();
+        shadowOf(Looper.getMainLooper()).idle();
         assertThat("Did not receive 'connecting' event",
                 connectingMessageReceived.await(MESSAGE_RECEIVING_TIMEOUT, TimeUnit.MILLISECONDS),
                 is(true));
@@ -294,9 +296,9 @@ public class WifiPresenterControlTest {
         mockupServer.setTransmittedString(SERVER_VERSION_FAILURE);
         final CountDownLatch messageReceived = new CountDownLatch(1);
 
-        control = new WifiPresenterControl(new Handler() {
+        control = new WifiPresenterControl(new Handler(Looper.myLooper()) {
             @Override
-            public void handleMessage(Message msg) {
+            public void handleMessage(@NonNull Message msg) {
                 if (msg.what == RemoteControl.ServiceState.ERROR.ordinal()) {
                     assertThat("Got wrong error type",
                             msg.getData().getString(RemoteControl.RESULT_VALUES[1]),
@@ -310,7 +312,7 @@ public class WifiPresenterControlTest {
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.NONE);
 
-        ShadowLooper.runUiThreadTasks();
+        shadowOf(Looper.getMainLooper()).idle();
         assertThat("Did not receive 'error' event",
                 messageReceived.await(MESSAGE_RECEIVING_TIMEOUT, TimeUnit.MILLISECONDS),
                 is(true));
@@ -324,9 +326,9 @@ public class WifiPresenterControlTest {
         mockupServer.setTransmittedString("This is invalid json data\n\n");
         final CountDownLatch messageReceived = new CountDownLatch(1);
 
-        control = new WifiPresenterControl(new Handler() {
+        control = new WifiPresenterControl(new Handler(Looper.myLooper()) {
             @Override
-            public void handleMessage(Message msg) {
+            public void handleMessage(@NonNull Message msg) {
                 if (msg.what == RemoteControl.ServiceState.ERROR.ordinal()) {
                     assertThat("Got wrong error type",
                             msg.getData().getString(RemoteControl.RESULT_VALUES[1]),
@@ -342,7 +344,7 @@ public class WifiPresenterControlTest {
         long startTime = System.currentTimeMillis();
         while (System.currentTimeMillis() < startTime + MESSAGE_RECEIVING_TIMEOUT) {
             Thread.sleep(MESSAGE_CHECK_TIME);
-            ShadowLooper.runUiThreadTasks();
+            shadowOf(Looper.getMainLooper()).idle();
             if (messageReceived.await(MESSAGE_CHECK_TIME, TimeUnit.MILLISECONDS)) {
                 return;
             }
@@ -355,7 +357,7 @@ public class WifiPresenterControlTest {
      */
     @Test
     public void testClientDisconnected() throws InterruptedException {
-        control = new WifiPresenterControl(new Handler() {});
+        control = new WifiPresenterControl(new Handler(Looper.myLooper()) {});
         control.connect(BroadcastServer.WIFI_DEVICE_NAME, BroadcastServer.WIFI_IP_ADDRESS);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTING);
 
@@ -370,7 +372,7 @@ public class WifiPresenterControlTest {
     public void testWriteCommand() throws InterruptedException {
         mockupServer.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        control = new WifiPresenterControl(new Handler() {});
+        control = new WifiPresenterControl(new Handler(Looper.myLooper()) {});
         control.connect(BroadcastServer.WIFI_DEVICE_NAME, BroadcastServer.WIFI_IP_ADDRESS);
         waitForServiceStateChanged(control, RemoteControl.ServiceState.CONNECTED);
 
@@ -391,7 +393,7 @@ public class WifiPresenterControlTest {
     public void testWriteCommandDisconnected() throws InterruptedException {
         mockupServer.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        control = new WifiPresenterControl(new Handler() {});
+        control = new WifiPresenterControl(new Handler(Looper.myLooper()) {});
         control.connect(BroadcastServer.WIFI_DEVICE_NAME, BroadcastServer.WIFI_IP_ADDRESS);
         // Wait some time until the message has been sent
         Thread.sleep(50);
@@ -405,7 +407,7 @@ public class WifiPresenterControlTest {
     @Test
     public void testDisconnectingOnNoConnection() {
         mockupServer.setTransmittedString(SERVER_VERSION_SUCCESS);
-        control = new WifiPresenterControl(new Handler() {});
+        control = new WifiPresenterControl(new Handler(Looper.myLooper()) {});
 
         // Try to disconnect, although we didn't initiate a connection yet.
         // Should not produce a null pointer exception.

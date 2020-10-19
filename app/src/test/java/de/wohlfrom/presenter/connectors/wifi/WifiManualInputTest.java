@@ -18,7 +18,6 @@
 
 package de.wohlfrom.presenter.connectors.wifi;
 
-import android.app.Fragment;
 import android.os.Build;
 import android.view.View;
 import android.widget.Button;
@@ -34,26 +33,25 @@ import org.robolectric.annotation.Config;
 
 import java.util.Objects;
 
+import androidx.fragment.app.testing.FragmentScenario;
 import de.wohlfrom.presenter.R;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.robolectric.util.FragmentTestUtil.startFragment;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 /**
  * These tests ensure that the device selector fragment works properly.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = "src/main/AndroidManifest.xml",
-        sdk = {
+@Config(sdk = {
             Build.VERSION_CODES.LOLLIPOP_MR1,
             Build.VERSION_CODES.M
         })
 public class WifiManualInputTest {
     private WifiManualInput wifiManualInput;
-    private ActivityController activityController;
+    private ActivityController<DummyActivity> activityController;
 
     /**
      * Initializes the {@link WifiManualInput} fragment.
@@ -62,7 +60,7 @@ public class WifiManualInputTest {
     public void initTestcase() {
         wifiManualInput = new WifiManualInput();
         activityController = Robolectric.buildActivity(DummyActivity.class);
-        ((DummyActivity) activityController.get()).setFragment(wifiManualInput);
+        activityController.get().setFragment(wifiManualInput);
     }
 
     /**
@@ -84,8 +82,7 @@ public class WifiManualInputTest {
      */
     @Test(expected = ClassCastException.class)
     public void instantiateNoDeviceListResultListener() {
-        Fragment fragment = new WifiManualInput();
-        startFragment(fragment);
+        FragmentScenario.launch(WifiManualInput.class);
     }
 
     /**

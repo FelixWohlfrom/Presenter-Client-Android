@@ -18,17 +18,12 @@
 
 package de.wohlfrom.presenter;
 
-import android.support.test.filters.SmallTest;
-import android.support.test.rule.ActivityTestRule;
-import android.support.test.runner.AndroidJUnit4;
-
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import androidx.test.core.app.ActivityScenario;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.SmallTest;
 
 /**
  * Basic verification for about activity interactions.
@@ -37,18 +32,11 @@ import static org.hamcrest.Matchers.notNullValue;
 public class AboutActivityTest {
 
     /**
-     * The rule to interact with the about activity.
-     */
-    @Rule
-    public final ActivityTestRule<AboutActivity> aboutActivityRule
-            = new ActivityTestRule<>(AboutActivity.class);
-
-    /**
      * Test that the about activity can be started at all.
      */
     @Test
     @SmallTest
     public void instantiateActivity() {
-        assertThat(aboutActivityRule.getActivity(), is(notNullValue()));
+        ActivityScenario.launch(AboutActivity.class);
     }
 }

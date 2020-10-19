@@ -18,11 +18,11 @@
 
 package de.wohlfrom.presenter.connectors.wifi;
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.os.Bundle;
 
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
 import de.wohlfrom.presenter.R;
 
 /**
@@ -36,7 +36,7 @@ import de.wohlfrom.presenter.R;
  *     activityController.create().resume();
  * </code>
  */
-public class DummyActivity extends Activity 
+public class DummyActivity extends FragmentActivity
         implements DeviceSelector.DeviceListResultListener {
     
     private String hostname = null;
@@ -61,7 +61,7 @@ public class DummyActivity extends Activity
     @Override
     public void onResume() {
         super.onResume();
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.connector_content, fragment);
         transaction.commit();
     }

@@ -18,16 +18,16 @@
 
 package de.wohlfrom.presenter;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.v13.app.FragmentStatePagerAdapter;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -181,12 +181,12 @@ public class Presenter extends Fragment {
      * This slider pager adapter contains the different pages containing the buttons of the
      * presenter fragment.
      */
-    private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
+    private static class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
         final List<Fragment> activeFragmentList;
 
         ScreenSlidePagerAdapter(FragmentManager fragmentManager,
                                 ProtocolVersion activeProtocolVersion) {
-            super(fragmentManager);
+            super(fragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
 
             activeFragmentList = new ArrayList<>();
 
@@ -212,7 +212,7 @@ public class Presenter extends Fragment {
         }
 
         @Override
-        public Fragment getItem(int position) {
+        public Fragment getItem(@NonNull int position) {
             return activeFragmentList.get(position);
         }
 
@@ -259,7 +259,7 @@ public class Presenter extends Fragment {
         }
 
         @Override
-        public void onAttach(Context context) {
+        public void onAttach(@NonNull Context context) {
             super.onAttach(context);
 
             try {

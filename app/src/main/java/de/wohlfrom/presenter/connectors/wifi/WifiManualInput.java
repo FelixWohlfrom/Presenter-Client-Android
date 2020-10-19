@@ -19,7 +19,9 @@
 package de.wohlfrom.presenter.connectors.wifi;
 
 import android.app.Activity;
-import android.app.Fragment;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -62,13 +64,13 @@ public class WifiManualInput extends Fragment {
 
     // Required for backwards compatibility
     @Override
-    public void onAttach(Activity activity) {
+    public void onAttach(@NonNull Activity activity) {
         super.onAttach(activity);
         initListener(activity);
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         initListener(context);
     }

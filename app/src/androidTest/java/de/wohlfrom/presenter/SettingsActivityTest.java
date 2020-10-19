@@ -18,28 +18,23 @@
 
 package de.wohlfrom.presenter;
 
-import android.os.Build;
-import android.support.test.filters.LargeTest;
-import android.support.test.filters.RequiresDevice;
-import android.support.test.filters.SmallTest;
-import android.support.test.rule.ActivityTestRule;
-import android.support.test.runner.AndroidJUnit4;
-
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.isChecked;
-import static android.support.test.espresso.matcher.ViewMatchers.isNotChecked;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import androidx.test.core.app.ActivityScenario;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.LargeTest;
+import androidx.test.filters.RequiresDevice;
+import androidx.test.filters.SmallTest;
+
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isChecked;
+import static androidx.test.espresso.matcher.ViewMatchers.isNotChecked;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 /**
  * This class verifies that in the settings activity storing and restoring of all settings
@@ -60,23 +55,20 @@ public class SettingsActivityTest {
     private boolean useVolumeKeysForNavigation;
 
     /**
-     * The rule to interact with the settings activity
-     */
-    @Rule
-    public final ActivityTestRule<SettingsActivity> settingsActivityRule
-            = new ActivityTestRule<>(SettingsActivity.class);
-
-    /**
      * Store all settings before the testcase and initialize them.
      */
     @Before
     public void storeSettings() {
-        Settings settings = new Settings(settingsActivityRule.getActivity());
-        silenceDuringPresentation = settings.silenceDuringPresentation();
-        useVolumeKeysForNavigation = settings.useVolumeKeysForNavigation();
+        ActivityScenario<SettingsActivity> scenario =
+                ActivityScenario.launch(SettingsActivity.class);
+        scenario.onActivity(activity -> {
+            Settings settings = new Settings(activity);
+            silenceDuringPresentation = settings.silenceDuringPresentation();
+            useVolumeKeysForNavigation = settings.useVolumeKeysForNavigation();
 
-        settings.silenceDuringPresentation(false);
-        settings.useVolumeKeysForNavigation(false);
+            settings.silenceDuringPresentation(false);
+            settings.useVolumeKeysForNavigation(false);
+        });
     }
 
     /**
@@ -84,9 +76,13 @@ public class SettingsActivityTest {
      */
     @After
     public void restoreSettings() {
-        Settings settings = new Settings(settingsActivityRule.getActivity());
-        settings.silenceDuringPresentation(silenceDuringPresentation);
-        settings.useVolumeKeysForNavigation(useVolumeKeysForNavigation);
+        ActivityScenario<SettingsActivity> scenario =
+                ActivityScenario.launch(SettingsActivity.class);
+        scenario.onActivity(activity -> {
+            Settings settings = new Settings(activity);
+            settings.silenceDuringPresentation(silenceDuringPresentation);
+            settings.useVolumeKeysForNavigation(useVolumeKeysForNavigation);
+        });
     }
 
     /**
@@ -95,7 +91,7 @@ public class SettingsActivityTest {
     @Test
     @SmallTest
     public void instantiateActivity() {
-        assertThat(settingsActivityRule.getActivity(), is(notNullValue()));
+        ActivityScenario.launch(SettingsActivity.class);
     }
 
     /**
@@ -108,20 +104,16 @@ public class SettingsActivityTest {
     @LargeTest
     @RequiresDevice
     public void verifySilenceDuringPresentationStoring() throws InterruptedException {
+        ActivityScenario<SettingsActivity> scenario =
+                ActivityScenario.launch(SettingsActivity.class);
+
         onView(withId(R.id.silenceDuringPresentation))
                 .perform(click());
         Thread.sleep(RESPONSE_TIMEOUT);
         onView(withId(R.id.silenceDuringPresentation))
                 .check(matches(isChecked()));
 
-        settingsActivityRule.getActivity().onStop();
-        settingsActivityRule.getActivity().finish();
-        Thread.sleep(RESPONSE_TIMEOUT);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
-        }
-
-        settingsActivityRule.launchActivity(null);
+        scenario.recreate();
         onView(withId(R.id.silenceDuringPresentation))
                 .check(matches(isChecked()))
                 .perform(click());
@@ -129,14 +121,7 @@ public class SettingsActivityTest {
         onView(withId(R.id.silenceDuringPresentation))
                 .check(matches(isNotChecked()));
 
-        settingsActivityRule.getActivity().onStop();
-        settingsActivityRule.getActivity().finish();
-        Thread.sleep(RESPONSE_TIMEOUT);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
-        }
-
-        settingsActivityRule.launchActivity(null);
+        scenario.recreate();
         onView(withId(R.id.silenceDuringPresentation)).check(matches(isNotChecked()));
     }
 
@@ -150,35 +135,24 @@ public class SettingsActivityTest {
     @LargeTest
     @RequiresDevice
     public void verifyUseVolumeKeysForNavigationStoring() throws InterruptedException {
-        onView(withId(R.id.useVolumeKeysForNavigation))
-                .perform(click());
-        Thread.sleep(RESPONSE_TIMEOUT);
-        onView(withId(R.id.useVolumeKeysForNavigation))
-                .check(matches(isNotChecked()));
+        ActivityScenario<SettingsActivity> scenario =
+                ActivityScenario.launch(SettingsActivity.class);
 
-        settingsActivityRule.getActivity().onStop();
-        settingsActivityRule.getActivity().finish();
-        Thread.sleep(RESPONSE_TIMEOUT);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
-        }
-
-        settingsActivityRule.launchActivity(null);
         onView(withId(R.id.useVolumeKeysForNavigation))
-                .check(matches(isNotChecked()))
                 .perform(click());
         Thread.sleep(RESPONSE_TIMEOUT);
         onView(withId(R.id.useVolumeKeysForNavigation))
                 .check(matches(isChecked()));
 
-        settingsActivityRule.getActivity().onStop();
-        settingsActivityRule.getActivity().finish();
+        scenario.recreate();
+        onView(withId(R.id.useVolumeKeysForNavigation))
+                .check(matches(isChecked()))
+                .perform(click());
         Thread.sleep(RESPONSE_TIMEOUT);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            assertThat(settingsActivityRule.getActivity().isDestroyed(), is(true));
-        }
+        onView(withId(R.id.useVolumeKeysForNavigation))
+                .check(matches(isNotChecked()));
 
-        settingsActivityRule.launchActivity(null);
-        onView(withId(R.id.useVolumeKeysForNavigation)).check(matches(isChecked()));
+        scenario.recreate();
+        onView(withId(R.id.useVolumeKeysForNavigation)).check(matches(isNotChecked()));
     }
 }

@@ -18,9 +18,8 @@
 
 package de.wohlfrom.presenter.connectors.wifi;
 
-import android.app.Activity;
-import android.app.Fragment;
 import android.os.Build;
+import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListAdapter;
@@ -40,23 +39,22 @@ import java.util.Objects;
 
 import de.wohlfrom.presenter.R;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.robolectric.util.FragmentTestUtil.startFragment;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * These tests ensure that the device selector fragment works properly.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = "src/main/AndroidManifest.xml",
-        sdk = {
+@Config(sdk = {
             Build.VERSION_CODES.LOLLIPOP_MR1,
             Build.VERSION_CODES.M
         })
 public class DeviceSelectorTest {
     private DeviceSelector deviceSelector;
-    private ActivityController activityController;
+    private ActivityController<DummyActivity> activityController;
     private BroadcastServer broadcastServer;
 
     /**
@@ -67,7 +65,7 @@ public class DeviceSelectorTest {
     public void initTestcase() {
         deviceSelector = new DeviceSelector();
         activityController = Robolectric.buildActivity(DummyActivity.class);
-        ((DummyActivity) activityController.get()).setFragment(deviceSelector);
+        activityController.get().setFragment(deviceSelector);
         
         broadcastServer = new BroadcastServer();
     }
@@ -78,20 +76,10 @@ public class DeviceSelectorTest {
      */
     @After
     public void cleanupTestcase() {
-        if (!((Activity)activityController.get()).isDestroyed()) {
+        if (!activityController.get().isDestroyed()) {
             activityController.destroy();
         }
         broadcastServer.stop();
-    }
-
-    /**
-     * Verifies that correct exception is thrown if the inflating context does not implement
-     * {@link DeviceSelector.DeviceListResultListener}
-     */
-    @Test(expected = ClassCastException.class)
-    public void instantiateNoDeviceListResultListener() {
-        Fragment fragment = new DeviceSelector();
-        startFragment(fragment);
     }
 
     /**
@@ -121,8 +109,7 @@ public class DeviceSelectorTest {
 
         // Start broadcasting of new devices
         broadcastServer.start();
-
-        ShadowLooper.runUiThreadTasks();
+        shadowOf(Looper.getMainLooper()).idle();
 
         View view = deviceSelector.getView();
         assertThat("Could not find broadcasted devices",
@@ -149,7 +136,7 @@ public class DeviceSelectorTest {
 
         // Start broadcasting of new devices
         broadcastServer.start();
-        ShadowLooper.runUiThreadTasks();
+        shadowOf(Looper.getMainLooper()).idle();
 
         // Fist check that our device is found
         // Other checks like only one device found and others are already handled in
@@ -163,11 +150,11 @@ public class DeviceSelectorTest {
         
         // Now stop broadcasting and give the device some time to disappear
         broadcastServer.stop();
-        ShadowLooper.runUiThreadTasks();
+        shadowOf(Looper.getMainLooper()).idle();
         
         // Sleep some longer time than the removal time, just to be sure it is properly removed.
         Thread.sleep(15000);
-        ShadowLooper.runUiThreadTasks();
+        shadowOf(Looper.getMainLooper()).idle();
         assertThat("Found a device, although it should have been removed.",
                 ((ListView) view.findViewById(R.id.broadcast_devices))
                         .getAdapter().getCount(), is(0));
@@ -190,7 +177,7 @@ public class DeviceSelectorTest {
     public void verifyDestroyingOneDevice() throws InterruptedException {
         // Start broadcasting of new devices
         new BroadcastServer().start();
-        ShadowLooper.runUiThreadTasks();
+        shadowOf(Looper.getMainLooper()).idle();
         
         activityController.create().resume().destroy();
     }
@@ -207,7 +194,7 @@ public class DeviceSelectorTest {
 
         // Start broadcasting of new devices
         new BroadcastServer().start();
-        ShadowLooper.runUiThreadTasks();
+        shadowOf(Looper.getMainLooper()).idle();
 
         View view = deviceSelector.getView();
 
@@ -217,11 +204,9 @@ public class DeviceSelectorTest {
         listView.performItemClick(itemView, 0, adapter.getItemId(0));
 
         assertThat("Received wrong address on device listener",
-                ((DummyActivity)activityController.get()).getAddress(),
-                is(BroadcastServer.WIFI_IP_ADDRESS));
+                activityController.get().getAddress(), is(BroadcastServer.WIFI_IP_ADDRESS));
         assertThat("Received wrong hostname on device listener",
-                ((DummyActivity)activityController.get()).getHostname(),
-                is(BroadcastServer.WIFI_DEVICE_NAME));
+                activityController.get().getHostname(), is(BroadcastServer.WIFI_DEVICE_NAME));
     }
 
     /**
@@ -230,15 +215,16 @@ public class DeviceSelectorTest {
     @Test
     public void clickOnManualConnection() {
         activityController.create().resume().visible();
+
         Button manualConnection =
                 Objects.requireNonNull(deviceSelector.getView())
                         .findViewById(R.id.button_manual_connection);
         
         assertThat("Did not click manual connection button", 
                 manualConnection.performClick(), is(true));
+        shadowOf(Looper.getMainLooper()).idle();
         
         assertThat("Did not show manual connection fragment",
-                ((Activity)activityController.get()).findViewById(R.id.ip_address_label),
-                is(notNullValue()));
+                activityController.get().findViewById(R.id.ip_address_label), is(notNullValue()));
     }
 }

@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.os.Looper;
 import android.view.KeyEvent;
 import android.widget.ListView;
 
@@ -33,34 +34,30 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowConnectivityManager;
-import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowNetworkInfo;
 
 import java.io.IOException;
 
+import androidx.test.core.app.ApplicationProvider;
 import de.wohlfrom.presenter.R;
 import de.wohlfrom.presenter.Settings;
 import de.wohlfrom.presenter.connectors.Command;
 import de.wohlfrom.presenter.connectors.ProtocolVersion;
 import de.wohlfrom.presenter.connectors.RemoteControl;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsNull.notNullValue;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 /**
  * These tests ensure that the bluetooth connector fragment works properly.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = "src/main/AndroidManifest.xml",
-        shadows = {
+@Config(shadows = {
                 ShadowConnectivityManager.class
         },
         sdk = {
@@ -100,7 +97,7 @@ public class WifiConnectorTest {
         broadcastServer.start();
         
         ConnectivityManager connectivityManager = 
-                (ConnectivityManager) RuntimeEnvironment.application
+                (ConnectivityManager) ApplicationProvider.getApplicationContext()
                         .getSystemService(Context.CONNECTIVITY_SERVICE);
 
         shadowConnectivityManager = shadowOf(connectivityManager);
@@ -134,7 +131,8 @@ public class WifiConnectorTest {
      */
     @Test
     public void verifyLifecycleWifiEnabled() {
-        ActivityController activityController = Robolectric.buildActivity(WifiConnector.class);
+        ActivityController<WifiConnector> activityController =
+                Robolectric.buildActivity(WifiConnector.class);
         activityController.create().resume().pause().destroy();
     }
 
@@ -143,7 +141,8 @@ public class WifiConnectorTest {
      */
     @Test
     public void verifyStartingTwice() {
-        ActivityController activityController = Robolectric.buildActivity(WifiConnector.class);
+        ActivityController<WifiConnector> activityController =
+                Robolectric.buildActivity(WifiConnector.class);
         activityController.create().resume().pause().resume().pause().destroy();
     }
 
@@ -155,10 +154,11 @@ public class WifiConnectorTest {
     public void verifyLifecycleWifiDisabled() {        
         shadowConnectivityManager.setActiveNetworkInfo(disconnectedNetworkInfo);
         
-        ActivityController activityController = Robolectric.buildActivity(WifiConnector.class);
+        ActivityController<WifiConnector> activityController =
+                Robolectric.buildActivity(WifiConnector.class);
         activityController.create().resume();
 
-        WifiConnector connector = (WifiConnector) activityController.get();
+        WifiConnector connector = activityController.get();
 
         String intentAction =
                 shadowOf(connector).getNextStartedActivityForResult().intent.getAction();
@@ -172,16 +172,18 @@ public class WifiConnectorTest {
      */
     @Test
     public void checkWifiDisabling() {
-        ActivityController activityController = Robolectric.buildActivity(WifiConnector.class);
+        ActivityController<WifiConnector> activityController =
+                Robolectric.buildActivity(WifiConnector.class);
         activityController.create().resume();
 
         try {
             Intent intent = new Intent(ConnectivityManager.CONNECTIVITY_ACTION);
             intent.putExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY, true);
-            RuntimeEnvironment.application.sendBroadcast(intent);
-    
-            ShadowActivity activityShadow = shadowOf((WifiConnector) activityController.get());
-            assertThat("Did not finish wifi connector", activityShadow.isFinishing(), is(true));
+            ApplicationProvider.getApplicationContext().sendBroadcast(intent);
+            shadowOf(Looper.getMainLooper()).idle();
+
+            assertThat("Did not finish wifi connector", activityController.get().isFinishing(),
+                    is(true));
         } finally {
             activityController.stop().destroy();
         }
@@ -193,20 +195,16 @@ public class WifiConnectorTest {
      */
     @Test
     public void selectDevice() throws InterruptedException {
-        ActivityController activityController = Robolectric.buildActivity(WifiConnector.class);
-
-        WifiConnector connector =
-                (WifiConnector) activityController.create().resume().visible().get();
-
+        ActivityController<WifiConnector> activityController =
+                Robolectric.buildActivity(WifiConnector.class);
+        WifiConnector connector = activityController.create().resume().visible().get();
         Thread.sleep(200);
-        ShadowLooper.runUiThreadTasks();
+        shadowOf(Looper.getMainLooper()).idle();
         
         try {
             ((ListView) connector.findViewById(R.id.broadcast_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.broadcast_devices)).getChildAt(0), 0, 0);
-
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            shadowOf(Looper.getMainLooper()).idle();
 
             assertThat("Did not find 'connecting' screen", connector.getTitle(),
                     is(connector.getString(R.string.connecting_to_service)));
@@ -221,20 +219,16 @@ public class WifiConnectorTest {
      */
     @Test
     public void selectDeviceRestartActivity() throws InterruptedException {
-        ActivityController activityController = Robolectric.buildActivity(WifiConnector.class);
-
-        WifiConnector connector =
-                (WifiConnector) activityController.create().resume().visible().get();
-
-        Thread.sleep(100);
-        ShadowLooper.runUiThreadTasks();
+        ActivityController<WifiConnector> activityController =
+                Robolectric.buildActivity(WifiConnector.class);
+        WifiConnector connector = activityController.create().resume().visible().get();
+        Thread.sleep(50);
+        shadowOf(Looper.getMainLooper()).idle();
         
         try {
             ((ListView) connector.findViewById(R.id.broadcast_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.broadcast_devices)).getChildAt(0), 0, 0);
-            
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            shadowOf(Looper.getMainLooper()).idle();
 
             // Make sure that the activity has initially been started
             assertThat("Did not initiate connection to device", connector.getTitle(),
@@ -257,25 +251,22 @@ public class WifiConnectorTest {
     @Test
     public void connectedToDevice() throws InterruptedException {
         mockupServer.setTransmittedString(SERVER_VERSION_SUCCESS);
-        
-        ActivityController activityController = Robolectric.buildActivity(WifiConnector.class);
-        WifiConnector connector =
-                (WifiConnector) activityController.create().resume().visible().get();
 
-        Thread.sleep(100);
-        ShadowLooper.runUiThreadTasks();
+        ActivityController<WifiConnector> activityController =
+                Robolectric.buildActivity(WifiConnector.class);
+        WifiConnector connector = activityController.create().resume().visible().get();
+        shadowOf(Looper.getMainLooper()).idle();
         
         try {
             ((ListView) connector.findViewById(R.id.broadcast_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.broadcast_devices)).getChildAt(0), 0, 0);
-
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            shadowOf(Looper.getMainLooper()).idle();
 
             assertThat("Did not find 'prev slide' button",
                     connector.findViewById(R.id.prev_slide), is(notNullValue()));
         } finally {
             activityController.stop().destroy();
+            shadowOf(Looper.getMainLooper()).idle();
         }
     }
 
@@ -289,19 +280,18 @@ public class WifiConnectorTest {
     public void connectedToDeviceRestartActivity() throws InterruptedException {
         mockupServer.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        ActivityController activityController = Robolectric.buildActivity(WifiConnector.class);
-        WifiConnector connector =
-                (WifiConnector) activityController.create().resume().visible().get();
-
-        Thread.sleep(100);
-        ShadowLooper.runUiThreadTasks();
+        ActivityController<WifiConnector> activityController =
+                Robolectric.buildActivity(WifiConnector.class);
+        WifiConnector connector = activityController.create().resume().visible().get();
+        shadowOf(Looper.getMainLooper()).idle();
         
         try {
             ((ListView) connector.findViewById(R.id.broadcast_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.broadcast_devices)).getChildAt(0), 0, 0);
+            shadowOf(Looper.getMainLooper()).idle();
 
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            Thread.sleep(50);
+            shadowOf(Looper.getMainLooper()).idle();
 
             assertThat("Did not find 'next slide' button",
                     connector.findViewById(R.id.next_slide), is(notNullValue()));
@@ -311,6 +301,7 @@ public class WifiConnectorTest {
             assertThat("Did not find 'next slide' button after restart",
                     connector.findViewById(R.id.next_slide), is(notNullValue()));
         } finally {
+            shadowOf(Looper.getMainLooper()).idle();
             activityController.stop().destroy();
         }
     }
@@ -325,24 +316,25 @@ public class WifiConnectorTest {
     public void connectionFailedInvalidVersion() throws InterruptedException {
         mockupServer.setTransmittedString(SERVER_INVALID_STRING);
 
-        ActivityController activityController = Robolectric.buildActivity(WifiConnector.class);
-        WifiConnector connector =
-                (WifiConnector) activityController.create().resume().visible().get();
-
-        Thread.sleep(100);
-        ShadowLooper.runUiThreadTasks();
+        ActivityController<WifiConnector> activityController =
+                Robolectric.buildActivity(WifiConnector.class);
+        WifiConnector connector = activityController.create().resume().visible().get();
+        Thread.sleep(50);
+        shadowOf(Looper.getMainLooper()).runOneTask();
         
         try {
             ((ListView) connector.findViewById(R.id.broadcast_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.broadcast_devices)).getChildAt(0), 0, 0);
+            shadowOf(Looper.getMainLooper()).idle();
 
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            Thread.sleep(50);
+            shadowOf(Looper.getMainLooper()).idle();
 
             assertThat("Did not switch back to wifi broadcast overview",
                     connector.findViewById(R.id.button_manual_connection), is(notNullValue()));
         } finally {
             activityController.stop().destroy();
+            shadowOf(Looper.getMainLooper()).idle();
         }
     }
 
@@ -356,24 +348,25 @@ public class WifiConnectorTest {
     public void connectionFailedParsingError() throws InterruptedException {
         mockupServer.setTransmittedString(SERVER_VERSION_FAILURE);
 
-        ActivityController activityController = Robolectric.buildActivity(WifiConnector.class);
-        WifiConnector connector =
-                (WifiConnector) activityController.create().resume().visible().get();
-
-        Thread.sleep(100);
-        ShadowLooper.runUiThreadTasks();
+        ActivityController<WifiConnector> activityController =
+                Robolectric.buildActivity(WifiConnector.class);
+        WifiConnector connector = activityController.create().resume().visible().get();
+        Thread.sleep(50);
+        shadowOf(Looper.getMainLooper()).idle();
         
         try {
             ((ListView) connector.findViewById(R.id.broadcast_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.broadcast_devices)).getChildAt(0), 0, 0);
+            shadowOf(Looper.getMainLooper()).idle();
 
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            Thread.sleep(50);
+            shadowOf(Looper.getMainLooper()).idle();
 
             assertThat("Did not switch back to wifi broadcast overview",
                     connector.findViewById(R.id.button_manual_connection), is(notNullValue()));
         } finally {
             activityController.stop().destroy();
+            shadowOf(Looper.getMainLooper()).idle();
         }
     }
 
@@ -386,24 +379,21 @@ public class WifiConnectorTest {
     public void connectionLost() throws InterruptedException, IOException {
         mockupServer.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        ActivityController activityController = Robolectric.buildActivity(WifiConnector.class);
-        WifiConnector connector =
-                (WifiConnector) activityController.create().resume().visible().get();
-
-        Thread.sleep(100);
-        ShadowLooper.runUiThreadTasks();
+        ActivityController<WifiConnector> activityController =
+                Robolectric.buildActivity(WifiConnector.class);
+        WifiConnector connector = activityController.create().resume().visible().get();
+        Thread.sleep(50);
+        shadowOf(Looper.getMainLooper()).idle();
         
         try {
             ((ListView) connector.findViewById(R.id.broadcast_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.broadcast_devices)).getChildAt(0), 0, 0);
-
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            shadowOf(Looper.getMainLooper()).idle();
 
             mockupServer.close();
 
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            Thread.sleep(50);
+            shadowOf(Looper.getMainLooper()).idle();
 
             assertThat("Did not switch back to wifi device selection",
                     connector.findViewById(R.id.button_manual_connection), is(notNullValue()));
@@ -422,27 +412,27 @@ public class WifiConnectorTest {
     public void connectionLostConnecting() throws InterruptedException, IOException {
         mockupServer.close();
         
-        ActivityController activityController = Robolectric.buildActivity(WifiConnector.class);
-
-        WifiConnector connector = 
-                (WifiConnector) activityController.create().resume().visible().get();
-
-        Thread.sleep(100);
-        ShadowLooper.runUiThreadTasks();
+        ActivityController<WifiConnector> activityController =
+                Robolectric.buildActivity(WifiConnector.class);
+        WifiConnector connector = activityController.create().resume().visible().get();
+        Thread.sleep(50);
+        shadowOf(Looper.getMainLooper()).idle();
         
         try {
             ((ListView) connector.findViewById(R.id.broadcast_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.broadcast_devices)).getChildAt(0), 0, 0);
+            shadowOf(Looper.getMainLooper()).idle();
             
             broadcastServer.stop();
-            
+
             Thread.sleep(3000);
-            ShadowLooper.runUiThreadTasks();
+            shadowOf(Looper.getMainLooper()).idle();
 
             assertThat("Did not switch back to wifi device selection",
                     connector.findViewById(R.id.button_manual_connection), is(notNullValue()));
         } finally {
             activityController.stop().destroy();
+            shadowOf(Looper.getMainLooper()).idle();
         }
     }
 
@@ -453,10 +443,11 @@ public class WifiConnectorTest {
     @Test
     public void wifiEnableRequestSuccess() {
         shadowConnectivityManager.setActiveNetworkInfo(disconnectedNetworkInfo);
-        ActivityController activityController = Robolectric.buildActivity(WifiConnector.class);
+        ActivityController<WifiConnector> activityController =
+                Robolectric.buildActivity(WifiConnector.class);
         activityController.create().resume();
 
-        WifiConnector connector = (WifiConnector) activityController.get();
+        WifiConnector connector = activityController.get();
 
         Intent intent = shadowOf(connector).getNextStartedActivityForResult().intent;
         assertThat("Did not get request to enable bluetooth",
@@ -464,12 +455,10 @@ public class WifiConnectorTest {
 
         // Enable bluetooth
         shadowConnectivityManager.setActiveNetworkInfo(connectedNetworkInfo);
-        ((WifiConnector) activityController.get())
-                .onActivityResult(REQUEST_ENABLE_WIFI, Activity.RESULT_OK, intent);
+        activityController.get().onActivityResult(REQUEST_ENABLE_WIFI, Activity.RESULT_OK, intent);
 
         // Send second result with unknown request code, should also work fine
-        ((WifiConnector) activityController.get())
-                .onActivityResult(0, Activity.RESULT_OK, intent);
+        activityController.get().onActivityResult(0, Activity.RESULT_OK, intent);
     }
 
     /**
@@ -479,10 +468,11 @@ public class WifiConnectorTest {
     @Test
     public void wifiEnableRequestDenied() {
         shadowConnectivityManager.setActiveNetworkInfo(disconnectedNetworkInfo);
-        ActivityController activityController = Robolectric.buildActivity(WifiConnector.class);
+        ActivityController<WifiConnector> activityController =
+                Robolectric.buildActivity(WifiConnector.class);
         activityController.create().resume();
 
-        WifiConnector connector = (WifiConnector) activityController.get();
+        WifiConnector connector = activityController.get();
         
         try {
             Intent intent = shadowOf(connector).getNextStartedActivityForResult().intent;
@@ -490,11 +480,11 @@ public class WifiConnectorTest {
                     intent.getAction(), is(android.provider.Settings.ACTION_WIFI_SETTINGS));
 
             // Deny request
-            ((WifiConnector) activityController.get()).onActivityResult(
+            activityController.get().onActivityResult(
                     REQUEST_ENABLE_WIFI, Activity.RESULT_CANCELED, intent);
 
             assertThat("Did not stop the wifi connector",
-                    ((WifiConnector) activityController.get()).isFinishing(), is(true));
+                    activityController.get().isFinishing(), is(true));
         } finally {
             activityController.stop().destroy();
         }
@@ -509,30 +499,30 @@ public class WifiConnectorTest {
     public void verifyVolumeNavigationEnabled() throws InterruptedException {
         mockupServer.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        ActivityController activityController = Robolectric.buildActivity(WifiConnector.class);
-
-        WifiConnector connector =
-                (WifiConnector) activityController.create().resume().visible().get();
-
-        Thread.sleep(100);
-        ShadowLooper.runUiThreadTasks();
+        ActivityController<WifiConnector> activityController =
+                Robolectric.buildActivity(WifiConnector.class);
+        WifiConnector connector = activityController.create().resume().visible().get();
+        Thread.sleep(50);
+        shadowOf(Looper.getMainLooper()).idle();
 
         try {
             ((ListView) connector.findViewById(R.id.broadcast_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.broadcast_devices)).getChildAt(0), 0, 0);
-
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            shadowOf(Looper.getMainLooper()).idle();
 
             connector.onKeyUp(KeyEvent.KEYCODE_VOLUME_UP, null);
-            Thread.sleep(100);
+            Thread.sleep(50);
+            shadowOf(Looper.getMainLooper()).idle();
+            
             assertThat("Did not emit event for 'volume up key'",
                     mockupServer.getLastTransmittedString(),
                     is("{ \"type\": \"command\", \"data\": \""
                             + Command.NEXT_SLIDE.getCommand() + "\"}\n\n"));
 
             connector.onKeyUp(KeyEvent.KEYCODE_VOLUME_DOWN, null);
-            Thread.sleep(100);
+            Thread.sleep(50);
+            shadowOf(Looper.getMainLooper()).idle();
+            
             assertThat("Did not emit event for 'volume down key'",
                     mockupServer.getLastTransmittedString(),
                     is("{ \"type\": \"command\", \"data\": \""
@@ -540,6 +530,7 @@ public class WifiConnectorTest {
 
         } finally {
             activityController.stop().destroy();
+            shadowOf(Looper.getMainLooper()).idle();
         }
     }
 
@@ -552,34 +543,35 @@ public class WifiConnectorTest {
     public void verifyVolumeNavigationDisabled() throws InterruptedException {
         mockupServer.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        ActivityController activityController = Robolectric.buildActivity(WifiConnector.class);
-
-        WifiConnector connector =
-                (WifiConnector) activityController.create().resume().visible().get();
+        ActivityController<WifiConnector> activityController =
+                Robolectric.buildActivity(WifiConnector.class);
+        WifiConnector connector = activityController.create().resume().visible().get();
 
         Settings settings = new Settings(connector);
         settings.useVolumeKeysForNavigation(false);
 
-        Thread.sleep(100);
-        ShadowLooper.runUiThreadTasks();
+        Thread.sleep(50);
+        shadowOf(Looper.getMainLooper()).idle();
 
         try {
             ((ListView) connector.findViewById(R.id.broadcast_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.broadcast_devices)).getChildAt(0), 0, 0);
-
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            shadowOf(Looper.getMainLooper()).idle();
 
             mockupServer.resetLastTransmittedString();
 
             connector.onKeyUp(KeyEvent.KEYCODE_VOLUME_UP, null);
-            Thread.sleep(100);
+            Thread.sleep(50);
+            shadowOf(Looper.getMainLooper()).idle();
+            
             assertThat("Received unexpected event for 'volume up key'",
                     mockupServer.getLastTransmittedString(),
                     is(""));
 
             connector.onKeyUp(KeyEvent.KEYCODE_VOLUME_DOWN, null);
-            Thread.sleep(100);
+            Thread.sleep(50);
+            shadowOf(Looper.getMainLooper()).idle();
+            
             assertThat("Received unexpected event for 'volume down key'",
                     mockupServer.getLastTransmittedString(),
                     is(""));
@@ -598,47 +590,42 @@ public class WifiConnectorTest {
     public void verifyButtonPresses() throws InterruptedException {
         mockupServer.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        ActivityController activityController = Robolectric.buildActivity(WifiConnector.class);
-        
-        WifiConnector connector =
-                (WifiConnector) activityController.create().resume().visible().get();
-
-        Thread.sleep(100);
-        ShadowLooper.runUiThreadTasks();
+        ActivityController<WifiConnector> activityController =
+                Robolectric.buildActivity(WifiConnector.class);
+        WifiConnector connector = activityController.create().resume().visible().get();
+        shadowOf(Looper.getMainLooper()).idle();
         
         try {
             ((ListView) connector.findViewById(R.id.broadcast_devices)).performItemClick(
                 ((ListView) connector.findViewById(R.id.broadcast_devices)).getChildAt(0), 0, 0);
-            
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            shadowOf(Looper.getMainLooper()).idle();
 
             assertThat("Did not find 'next slide' button",
                     connector.findViewById(R.id.next_slide), is(notNullValue()));
 
             connector.onNextSlide();
-            Thread.sleep(100);
+            Thread.sleep(50);
             assertThat("Did not emit event for 'onNextSlide'",
                     mockupServer.getLastTransmittedString(),
                     is("{ \"type\": \"command\", \"data\": \""
                             + Command.NEXT_SLIDE.getCommand() + "\"}\n\n"));
 
             connector.onPrevSlide();
-            Thread.sleep(100);
+            Thread.sleep(50);
             assertThat("Did not emit event for 'onPrevSlide'",
                     mockupServer.getLastTransmittedString(),
                     is("{ \"type\": \"command\", \"data\": \""
                             + Command.PREV_SLIDE.getCommand() + "\"}\n\n"));
 
             connector.onStartPresentation();
-            Thread.sleep(100);
+            Thread.sleep(50);
             assertThat("Did not emit event for 'onStartPresentation'",
                     mockupServer.getLastTransmittedString(),
                     is("{ \"type\": \"command\", \"data\": \""
                             + Command.START_PRESENTATION.getCommand() + "\"}\n\n"));
 
             connector.onStopPresentation();
-            Thread.sleep(100);
+            Thread.sleep(50);
             assertThat("Did not emit event for 'onStopPresentation'",
                     mockupServer.getLastTransmittedString(),
                     is("{ \"type\": \"command\", \"data\": \""

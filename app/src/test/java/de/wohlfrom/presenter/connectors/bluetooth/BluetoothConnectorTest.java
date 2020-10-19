@@ -23,6 +23,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Build;
+import android.os.Looper;
 import android.view.KeyEvent;
 import android.widget.ListView;
 
@@ -31,34 +32,30 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowBluetoothAdapter;
 import org.robolectric.shadows.ShadowBluetoothDevice;
-import org.robolectric.shadows.ShadowLooper;
 
 import java.util.HashSet;
 
+import androidx.test.core.app.ApplicationProvider;
 import de.wohlfrom.presenter.R;
 import de.wohlfrom.presenter.Settings;
 import de.wohlfrom.presenter.connectors.Command;
 import de.wohlfrom.presenter.connectors.ProtocolVersion;
 import de.wohlfrom.presenter.connectors.RemoteControl;
-import de.wohlfrom.presenter.connectors.wifi.WifiConnector;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsNull.notNullValue;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 /**
  * These tests ensure that the bluetooth connector fragment works properly.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = "src/main/AndroidManifest.xml",
-        shadows = {ShadowBluetoothAdapter.class, ShadowBluetoothDevice.class,
+@Config(shadows = {ShadowBluetoothAdapter.class, ShadowBluetoothDevice.class,
                 ShadowBluetoothSocket.class},
         sdk = {
                 Build.VERSION_CODES.M
@@ -115,7 +112,8 @@ public class BluetoothConnectorTest {
      */
     @Test
     public void verifyLifecycleBluetoothEnabled() {
-        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
+        ActivityController<BluetoothConnector> activityController =
+                Robolectric.buildActivity(BluetoothConnector.class);
         activityController.create().resume().pause().destroy();
     }
 
@@ -124,7 +122,8 @@ public class BluetoothConnectorTest {
      */
     @Test
     public void verifyStartingTwice() {
-        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
+        ActivityController<BluetoothConnector> activityController =
+                Robolectric.buildActivity(BluetoothConnector.class);
         activityController.create().resume().pause().resume().pause().destroy();
     }
 
@@ -135,10 +134,11 @@ public class BluetoothConnectorTest {
     @Test
     public void verifyLifecycleBluetoothDisabled() {
         shadowOf(BluetoothAdapter.getDefaultAdapter()).setEnabled(false);
-        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
+        ActivityController<BluetoothConnector> activityController =
+                Robolectric.buildActivity(BluetoothConnector.class);
         activityController.create().resume();
 
-        BluetoothConnector connector = (BluetoothConnector) activityController.get();
+        BluetoothConnector connector = activityController.get();
 
         String intentAction =
                 shadowOf(connector).getNextStartedActivityForResult().intent.getAction();
@@ -152,15 +152,18 @@ public class BluetoothConnectorTest {
      */
     @Test
     public void checkBluetoothDisabling() {
-        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
+        ActivityController<BluetoothConnector> activityController =
+                Robolectric.buildActivity(BluetoothConnector.class);
         activityController.create().resume();
 
         Intent intent = new Intent(BluetoothAdapter.ACTION_STATE_CHANGED);
         intent.putExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.STATE_OFF);
-        RuntimeEnvironment.application.sendBroadcast(intent);
+        ApplicationProvider.getApplicationContext().sendBroadcast(intent);
+        shadowOf(Looper.getMainLooper()).idle();
 
-        ShadowActivity activityShadow = shadowOf((BluetoothConnector) activityController.get());
-        assertThat("Did not finish bluetooth connector", activityShadow.isFinishing(), is(true));
+        assertThat("Did not finish bluetooth connector",
+                activityController.get().isFinishing(),
+                is(true));
     }
 
     /**
@@ -171,19 +174,21 @@ public class BluetoothConnectorTest {
     public void selectDevice() {
         initBondedDevice();
 
-        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
-        BluetoothConnector connector =
-                (BluetoothConnector) activityController.create().resume().visible().get();
+        ActivityController<BluetoothConnector> activityController =
+                Robolectric.buildActivity(BluetoothConnector.class);
+        BluetoothConnector connector = activityController.create().resume().visible().get();
 
         try {
             ((ListView) connector.findViewById(R.id.paired_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.paired_devices)).getChildAt(0), 0, 0);
+            shadowOf(Looper.getMainLooper()).idle();
 
             assertThat("Did not find 'connecting' screen", connector.getTitle(),
                     is(connector.getString(R.string.connecting_to_service)));
 
         } finally {
             activityController.stop().destroy();
+            shadowOf(Looper.getMainLooper()).idle();
         }
     }
 
@@ -194,12 +199,13 @@ public class BluetoothConnectorTest {
     public void selectDeviceRestartActivity() {
         initBondedDevice();
 
-        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
-        BluetoothConnector connector =
-                (BluetoothConnector) activityController.create().resume().visible().get();
+        ActivityController<BluetoothConnector> activityController =
+                Robolectric.buildActivity(BluetoothConnector.class);
+        BluetoothConnector connector = activityController.create().resume().visible().get();
 
         ((ListView) connector.findViewById(R.id.paired_devices)).performItemClick(
                 ((ListView) connector.findViewById(R.id.paired_devices)).getChildAt(0), 0, 0);
+        shadowOf(Looper.getMainLooper()).idle();
 
 
         try {
@@ -227,21 +233,22 @@ public class BluetoothConnectorTest {
 
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
-        BluetoothConnector connector =
-                (BluetoothConnector) activityController.create().resume().visible().get();
+        ActivityController<BluetoothConnector> activityController =
+                Robolectric.buildActivity(BluetoothConnector.class);
+        BluetoothConnector connector = activityController.create().resume().visible().get();
 
         try {
             ((ListView) connector.findViewById(R.id.paired_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.paired_devices)).getChildAt(0), 0, 0);
 
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            Thread.sleep(50);
+            shadowOf(Looper.getMainLooper()).idle();
 
             assertThat("Did not find 'prev slide' button",
                     connector.findViewById(R.id.prev_slide), is(notNullValue()));
         } finally {
             activityController.stop().destroy();
+            shadowOf(Looper.getMainLooper()).idle();
         }
     }
 
@@ -257,16 +264,16 @@ public class BluetoothConnectorTest {
 
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
-        BluetoothConnector connector =
-                (BluetoothConnector) activityController.create().resume().visible().get();
+        ActivityController<BluetoothConnector> activityController =
+                Robolectric.buildActivity(BluetoothConnector.class);
+        BluetoothConnector connector = activityController.create().resume().visible().get();
 
         try {
             ((ListView) connector.findViewById(R.id.paired_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.paired_devices)).getChildAt(0), 0, 0);
 
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            Thread.sleep(50);
+            shadowOf(Looper.getMainLooper()).idle();
 
             assertThat("Did not find 'next slide' button",
                     connector.findViewById(R.id.next_slide), is(notNullValue()));
@@ -292,21 +299,25 @@ public class BluetoothConnectorTest {
 
         ShadowBluetoothSocket.setTransmittedString(SERVER_INVALID_STRING);
 
-        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
-        BluetoothConnector connector =
-                (BluetoothConnector) activityController.create().resume().visible().get();
+        ActivityController<BluetoothConnector> activityController =
+                Robolectric.buildActivity(BluetoothConnector.class);
+        BluetoothConnector connector = activityController.create().resume().visible().get();
+        shadowOf(Looper.getMainLooper()).idle();
 
         try {
             ((ListView) connector.findViewById(R.id.paired_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.paired_devices)).getChildAt(0), 0, 0);
+            shadowOf(Looper.getMainLooper()).idle();
 
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            Thread.sleep(50);
+            shadowOf(Looper.getMainLooper()).idle();
+            Thread.sleep(50);
 
             assertThat("Did not switch back to bluetooth device selection",
                     connector.findViewById(R.id.button_scan), is(notNullValue()));
         } finally {
             activityController.stop().destroy();
+            shadowOf(Looper.getMainLooper()).idle();
         }
     }
 
@@ -322,21 +333,25 @@ public class BluetoothConnectorTest {
 
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_FAILURE);
 
-        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
-        BluetoothConnector connector =
-                (BluetoothConnector) activityController.create().resume().visible().get();
+        ActivityController<BluetoothConnector> activityController =
+                Robolectric.buildActivity(BluetoothConnector.class);
+        BluetoothConnector connector = activityController.create().resume().visible().get();
+        shadowOf(Looper.getMainLooper()).idle();
 
         try {
             ((ListView) connector.findViewById(R.id.paired_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.paired_devices)).getChildAt(0), 0, 0);
+            shadowOf(Looper.getMainLooper()).idle();
 
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            Thread.sleep(50);
+            shadowOf(Looper.getMainLooper()).idle();
+            Thread.sleep(50);
 
             assertThat("Did not switch back to bluetooth device selection",
                     connector.findViewById(R.id.button_scan), is(notNullValue()));
         } finally {
             activityController.stop().destroy();
+            shadowOf(Looper.getMainLooper()).idle();
         }
     }
 
@@ -352,26 +367,25 @@ public class BluetoothConnectorTest {
 
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
-        BluetoothConnector connector =
-                (BluetoothConnector) activityController.create().resume().visible().get();
+        ActivityController<BluetoothConnector> activityController =
+                Robolectric.buildActivity(BluetoothConnector.class);
+        BluetoothConnector connector = activityController.create().resume().visible().get();
 
         try {
             ((ListView) connector.findViewById(R.id.paired_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.paired_devices)).getChildAt(0), 0, 0);
-
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            shadowOf(Looper.getMainLooper()).idle();
 
             ShadowBluetoothSocket.setFailReading(true);
-
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            Thread.sleep(50);
+            shadowOf(Looper.getMainLooper()).idle();
+            Thread.sleep(50);
 
             assertThat("Did not switch back to bluetooth device selection",
                     connector.findViewById(R.id.button_scan), is(notNullValue()));
         } finally {
             activityController.stop().destroy();
+            shadowOf(Looper.getMainLooper()).idle();
         }
     }
 
@@ -388,22 +402,25 @@ public class BluetoothConnectorTest {
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
         ShadowBluetoothSocket.setConnectionSucceed(false);
 
-        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
-
-        BluetoothConnector connector =
-                (BluetoothConnector) activityController.create().resume().visible().get();
+        ActivityController<BluetoothConnector> activityController =
+                Robolectric.buildActivity(BluetoothConnector.class);
+        BluetoothConnector connector = activityController.create().resume().visible().get();
+        shadowOf(Looper.getMainLooper()).idle();
 
         try {
             ((ListView) connector.findViewById(R.id.paired_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.paired_devices)).getChildAt(0), 0, 0);
+            shadowOf(Looper.getMainLooper()).idle();
 
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            Thread.sleep(50);
+            shadowOf(Looper.getMainLooper()).idle();
+            Thread.sleep(50);
 
             assertThat("Did not switch back to bluetooth device selection",
                     connector.findViewById(R.id.button_scan), is(notNullValue()));
         } finally {
             activityController.stop().destroy();
+            shadowOf(Looper.getMainLooper()).idle();
         }
     }
 
@@ -414,10 +431,11 @@ public class BluetoothConnectorTest {
     @Test
     public void bluetoothEnableRequestSuccess() {
         shadowOf(BluetoothAdapter.getDefaultAdapter()).setEnabled(false);
-        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
+        ActivityController<BluetoothConnector> activityController =
+                Robolectric.buildActivity(BluetoothConnector.class);
         activityController.create().resume();
 
-        BluetoothConnector connector = (BluetoothConnector) activityController.get();
+        BluetoothConnector connector = activityController.get();
 
         Intent intent = shadowOf(connector).getNextStartedActivityForResult().intent;
         assertThat("Did not get request to enable bluetooth",
@@ -425,12 +443,10 @@ public class BluetoothConnectorTest {
 
         // Enable bluetooth
         shadowOf(BluetoothAdapter.getDefaultAdapter()).setEnabled(true);
-        ((BluetoothConnector) activityController.get())
-                .onActivityResult(REQUEST_ENABLE_BT, Activity.RESULT_OK, intent);
+        activityController.get().onActivityResult(REQUEST_ENABLE_BT, Activity.RESULT_OK, intent);
 
         // Send second result with unknown request code, should also work fine
-        ((BluetoothConnector) activityController.get())
-                .onActivityResult(0, Activity.RESULT_OK, intent);
+        activityController.get().onActivityResult(0, Activity.RESULT_OK, intent);
     }
 
     /**
@@ -440,21 +456,22 @@ public class BluetoothConnectorTest {
     @Test
     public void bluetoothEnableRequestDenied() {
         shadowOf(BluetoothAdapter.getDefaultAdapter()).setEnabled(false);
-        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
+        ActivityController<BluetoothConnector> activityController =
+                Robolectric.buildActivity(BluetoothConnector.class);
         activityController.create().resume();
 
-        BluetoothConnector connector = (BluetoothConnector) activityController.get();
+        BluetoothConnector connector = activityController.get();
 
         Intent intent = shadowOf(connector).getNextStartedActivityForResult().intent;
         assertThat("Did not get request to enable bluetooth",
                 intent.getAction(), is(BluetoothAdapter.ACTION_REQUEST_ENABLE));
 
         // Deny request
-        ((BluetoothConnector) activityController.get()).onActivityResult(
+        activityController.get().onActivityResult(
                 REQUEST_ENABLE_BT, Activity.RESULT_CANCELED, intent);
 
         assertThat("Did not stop the bluetooth connector",
-                ((BluetoothConnector) activityController.get()).isFinishing(), is(true));
+                activityController.get().isFinishing(), is(true));
     }
 
     /**
@@ -468,24 +485,24 @@ public class BluetoothConnectorTest {
 
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
-        BluetoothConnector connector =
-                (BluetoothConnector) activityController.create().resume().visible().get();
+        ActivityController<BluetoothConnector> activityController =
+                Robolectric.buildActivity(BluetoothConnector.class);
+        BluetoothConnector connector = activityController.create().resume().visible().get();
 
         try {
             ((ListView) connector.findViewById(R.id.paired_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.paired_devices)).getChildAt(0), 0, 0);
-
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            shadowOf(Looper.getMainLooper()).idle();
 
             connector.onKeyUp(KeyEvent.KEYCODE_VOLUME_UP, null);
+            shadowOf(Looper.getMainLooper()).idle();
             assertThat("Did not emit event for 'volume up key'",
                     ShadowBluetoothSocket.getLastTransmittedString(),
                     is("{ \"type\": \"command\", \"data\": \""
                             + Command.NEXT_SLIDE.getCommand() + "\"}\n\n"));
 
             connector.onKeyUp(KeyEvent.KEYCODE_VOLUME_DOWN, null);
+            shadowOf(Looper.getMainLooper()).idle();
             assertThat("Did not emit event for 'volume down key'",
                     ShadowBluetoothSocket.getLastTransmittedString(),
                     is("{ \"type\": \"command\", \"data\": \""
@@ -493,6 +510,7 @@ public class BluetoothConnectorTest {
 
         } finally {
             activityController.stop().destroy();
+            shadowOf(Looper.getMainLooper()).idle();
         }
     }
 
@@ -507,9 +525,9 @@ public class BluetoothConnectorTest {
 
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
-        BluetoothConnector connector =
-                (BluetoothConnector) activityController.create().resume().visible().get();
+        ActivityController<BluetoothConnector> activityController =
+                Robolectric.buildActivity(BluetoothConnector.class);
+        BluetoothConnector connector = activityController.create().resume().visible().get();
 
         Settings settings = new Settings(connector);
         settings.useVolumeKeysForNavigation(false);
@@ -517,20 +535,18 @@ public class BluetoothConnectorTest {
         try {
             ((ListView) connector.findViewById(R.id.paired_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.paired_devices)).getChildAt(0), 0, 0);
-
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            shadowOf(Looper.getMainLooper()).idle();
 
             ShadowBluetoothSocket.resetLastTransmittedString();
 
             connector.onKeyUp(KeyEvent.KEYCODE_VOLUME_UP, null);
-            Thread.sleep(100);
+            Thread.sleep(50);
             assertThat("Received unexpected event for 'volume up key'",
                     ShadowBluetoothSocket.getLastTransmittedString(),
                     is(""));
 
             connector.onKeyUp(KeyEvent.KEYCODE_VOLUME_DOWN, null);
-            Thread.sleep(100);
+            Thread.sleep(50);
             assertThat("Received unexpected event for 'volume down key'",
                     ShadowBluetoothSocket.getLastTransmittedString(),
                     is(""));
@@ -551,16 +567,14 @@ public class BluetoothConnectorTest {
 
         ShadowBluetoothSocket.setTransmittedString(SERVER_VERSION_SUCCESS);
 
-        ActivityController activityController = Robolectric.buildActivity(BluetoothConnector.class);
-        BluetoothConnector connector =
-                (BluetoothConnector) activityController.create().resume().visible().get();
+        ActivityController<BluetoothConnector> activityController =
+                Robolectric.buildActivity(BluetoothConnector.class);
+        BluetoothConnector connector = activityController.create().resume().visible().get();
 
         try {
             ((ListView) connector.findViewById(R.id.paired_devices)).performItemClick(
                     ((ListView) connector.findViewById(R.id.paired_devices)).getChildAt(0), 0, 0);
-
-            Thread.sleep(100);
-            ShadowLooper.runUiThreadTasks();
+            shadowOf(Looper.getMainLooper()).idle();
 
             assertThat("Did not find 'next slide' button",
                     connector.findViewById(R.id.next_slide), is(notNullValue()));

@@ -19,12 +19,16 @@
 package de.wohlfrom.presenter.connectors.wifi;
 
 import android.annotation.SuppressLint;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -123,13 +127,13 @@ public class DeviceSelector extends Fragment {
 
     // Required for backwards compatibility
     @Override
-    public void onAttach(Activity activity) {
+    public void onAttach(@NonNull Activity activity) {
         super.onAttach(activity);
         initListener(activity);
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         initListener(context);
     }
@@ -157,7 +161,7 @@ public class DeviceSelector extends Fragment {
         Button manualConnection = getActivity().findViewById(R.id.button_manual_connection);
         manualConnection.setOnClickListener(view -> {
             getActivity().setTitle(R.string.manual_connection);
-            FragmentTransaction transaction = getFragmentManager().beginTransaction();
+            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
             Fragment fragment = WifiManualInput.newInstance();
             transaction.replace(R.id.connector_content, fragment);
             transaction.addToBackStack(null);
@@ -210,7 +214,7 @@ public class DeviceSelector extends Fragment {
     /**
      * This thread reads all broadcasts. Will emit a message if new broadcasts are received.
      */
-    private class BroadcastReceiverThread extends Thread {
+    private static class BroadcastReceiverThread extends Thread {
         final Handler mHandler;
         DatagramSocket mBroadcastSocket;
         
@@ -328,7 +332,7 @@ public class DeviceSelector extends Fragment {
      * The handler reacts on notifications from our threads.
      */
     @SuppressLint("HandlerLeak") // We don't leak any handlers here
-    private final Handler mHandler = new Handler() {
+    private final Handler mHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {

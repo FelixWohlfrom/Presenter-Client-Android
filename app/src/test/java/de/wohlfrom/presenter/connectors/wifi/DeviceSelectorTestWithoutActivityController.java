@@ -16,25 +16,34 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.*
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-package de.wohlfrom.presenter;
+package de.wohlfrom.presenter.connectors.wifi;
+
+import android.os.Build;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import androidx.fragment.app.testing.FragmentScenario;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 /**
- * Verify that the "connecting" fragment can be properly started.
+ * These tests ensure that the device selector fragment works properly.
+ * In contrary to the tests in {@link DeviceSelectorTest} these tests don't require
+ * an activity controller
  */
-@RunWith(AndroidJUnit4.class)
-public class ConnectingTest {
-
+@RunWith(RobolectricTestRunner.class)
+@Config(sdk = {
+            Build.VERSION_CODES.LOLLIPOP_MR1,
+            Build.VERSION_CODES.M
+        })
+public class DeviceSelectorTestWithoutActivityController {
     /**
-     * Verify that the fragment can be started.
+     * Verifies that correct exception is thrown if the inflating context does not implement
+     * {@link DeviceSelector.DeviceListResultListener}
      */
-    @Test
-    public void testFragment() {
-        FragmentScenario.launchInContainer(Connecting.class);
+    @Test(expected = ClassCastException.class)
+    public void instantiateNoDeviceListResultListener() {
+        FragmentScenario.launchInContainer(DeviceSelector.class);
     }
 }
